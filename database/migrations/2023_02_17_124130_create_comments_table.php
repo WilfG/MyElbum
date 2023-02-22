@@ -13,12 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tags', function (Blueprint $table) {
+        Schema::create('comments', function (Blueprint $table) {
             $table->id();
+            $table->string('comment_description');
             $table->index('frame_id');
             $table->foreignId('frame_id')->references('id')->on('frames')->onDelete('cascade');
             $table->index('contact_id');
-            $table->foreignId('contact_id')->references('id')->on('contact_id')->onDelete('cascade');
+            $table->foreignId('contact_id')->references('id')->on('contacts')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tags');
+        Schema::dropIfExists('comments');
     }
 };

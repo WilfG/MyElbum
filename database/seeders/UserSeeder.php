@@ -20,7 +20,8 @@ class UserSeeder extends Seeder
         DB::table('plans')->insert([
             'name' => $faker->name(),
             'email' => $faker->email(),
-            'phone_number' => $faker->phoneNumber(15)
+            'phone_number' => $faker->phoneNumber(15),
+            'user_id' => 1
         ]);
     }
 }

@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('frames', function (Blueprint $table) {
+        Schema::create('frame_comments', function (Blueprint $table) {
             $table->id();
-            $table->string('frame_title');
-            $table->string('frame_description');
-            $table->index('plan_id');
-            $table->foreignId('plan_id')->references('id')->on('plans')->onDelete('cascade');
+            $table->enum('content_type', ['image', 'video']);
+            $table->string('path');
+            $table->index('frame_id');
+            $table->foreignId('frame_id')->references('id')->on('frames')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('frames');
+        Schema::dropIfExists('frame_comments');
     }
 };
