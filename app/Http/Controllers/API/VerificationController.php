@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VerificationController extends Controller
 {
@@ -25,6 +26,8 @@ class VerificationController extends Controller
 
     public function verify(EmailVerificationRequest $request)
     {
+        // die($request);
+        Auth::attempt(['email' => $request->email]);
         if ($request->user()->hasVerifiedEmail()) {
             return [
                 'message' => 'Email already verified'
@@ -39,4 +42,5 @@ class VerificationController extends Controller
             'message' => 'Email has been verified'
         ];
     }
+    
 }

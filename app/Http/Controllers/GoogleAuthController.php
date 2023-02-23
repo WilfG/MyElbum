@@ -27,7 +27,7 @@ class GoogleAuthController extends Controller
                     'google_id' => $google_user->getId()
                 ]);
 
-                Auth::login($new_user);
+                // Auth::login($new_user);
                 // return redirect()->intended('dashboard', ['user' => $new_user]);
                 return view('dashboard', ['user' => $new_user]);
             } else {

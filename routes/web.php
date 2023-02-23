@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoogleAuthController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +20,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route::get('dashboard', [DashboardController::class, 'index']);
-// Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google-auth');
-// Route::get('auth/google/call-back', [GoogleAuthController::class, 'callbackGoogle']);
+Route::get('test', function(){
+    Artisan::call('migrate:fresh');
+});
+
+Route::get('dashboard', [DashboardController::class, 'index']);
+Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google-auth');
+Route::get('auth/google/call-back', [GoogleAuthController::class, 'callbackGoogle']);

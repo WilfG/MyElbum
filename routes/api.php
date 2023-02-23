@@ -20,25 +20,32 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::post('login', [AuthAPIController::class, 'login']);
-Route::post('register', [AuthAPIController::class, 'register']);
-
-// Route::get('/email/verify', function () {
-//     return view('auth.verify-email');
-// })->middleware('auth')->name('verification.notice');
-
-Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail']);
-Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify');
-
-
-Route::post('/login/callback', [SocialiteController::class, 'handleProviderCallback']);
-
 Route::resources([
     'plans' => plansAPIController::class,
     'frames' => framesAPIController::class,
     'frame_contents' => frameContentsAPIController::class,
 ]);
+
+
+Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+/**
+ * Login and Register(includes email verification sent but email validation not yet working)
+ */
+Route::controller(AuthAPIController::class)->group(function () {
+    Route::post('register', 'register'); // done but email verify not yet ready
+    Route::post('login', 'login');
+});
+
+Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
+Route::get('verify-email/{id}/{hash}',[VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
+
+/**
+ * Google Sign up and automatically sign in
+ */
+Route::post('/signup-socialite', [SocialiteController::class, 'handleProviderCallback']);
+
+Route::post('validatePhoneNumber', [AuthAPIController::class, 'validatePhoneNumber']);
+
