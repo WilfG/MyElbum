@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class framesAPIController extends Controller
+class FramesAPIController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -41,6 +41,7 @@ class framesAPIController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+            
             $input = $request->only('frame_title', 'frame_description', 'plan_id');
             $frame = Frame::create($input);
 

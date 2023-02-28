@@ -13,4 +13,8 @@ class Plan extends Model
     public function frames(){
         return $this->hasMany(Frame::class);
     }
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

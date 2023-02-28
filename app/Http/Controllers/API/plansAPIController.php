@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -32,18 +33,35 @@ class PlansAPIController extends Controller
     public function store(Request $request)
     {
         try {
-            $validator = Validator::make($request->only('plan_title', 'duration_time', 'plan_type', 'storage_capacity', 'user_id'), [
-                'plan_title' => ['required', 'string'],
-                'duration_time' => ['required', 'numeric'],
-                'plan_type' => ['required', 'string'],
-                'storage_capacity' => ['required', 'numeric'],
-                'user_id' => ['required', 'numeric'],
-            ]);
+            if ($request->plan_title == 'Free Trial') {
+                $validator = Validator::make($request->only('plan_title', 'user_id'), [
+                    'plan_title' => ['required', 'string'],
+                    'user_id' => ['required', 'numeric'],
+                ]);
+            }else{
+                $validator = Validator::make($request->only('plan_title', 'duration_time', 'plan_type', 'storage_capacity', 'user_id'), [
+                    'plan_title' => ['required', 'string'],
+                    'duration_time' => ['required', 'numeric'],
+                    'plan_type' => ['required', 'string'],
+                    'storage_capacity' => ['required', 'numeric'],
+                    'user_id' => ['required', 'numeric'],
+                ]);
+            }
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+            // die($request->plan_title);
+            if ($request->plan_title == 'Free Trial') {
+                $request->merge(['plan_type' => 'zero']);
+                $request->merge(['storage_capacity' => '8']);
+                $request->merge(['duration_time' => 45]);
+            }
+
+
             $input = $request->only('plan_title', 'duration_time', 'plan_type', 'storage_capacity', 'user_id');
+            // var_dump($input);
+            // die;
             $plan = Plan::create($input);
 
             $data = [
@@ -51,7 +69,6 @@ class PlansAPIController extends Controller
                 'message' => 'Plan successfully created'
             ];
             return response()->json($data, 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => $th->getMessage(),
@@ -68,6 +85,21 @@ class PlansAPIController extends Controller
     public function show($id)
     {
         $plan = Plan::find($id);
+        if ($plan) {
+            return response()->json(['plan', $plan]);
+        } else {
+            return response()->json(['message' => 'Plan not found']);
+        }
+    }
+
+
+    /**
+     * User Plan
+     */
+
+    public function user_plan($id)
+    {
+        $plan = DB::table('plans')->where('user_id', $id)->first();
         if ($plan) {
             return response()->json(['plan', $plan]);
         } else {

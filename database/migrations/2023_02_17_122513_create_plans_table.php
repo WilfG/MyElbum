@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('duration_time');
             $table->enum('plan_type', ['zero','Lite', 'All Go']);
             $table->enum('storage_capacity', ['8', '16', '32', '64']);
-            $table->index('user_id');
+            $table->index('user_id')->unique();
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });

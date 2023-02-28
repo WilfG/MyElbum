@@ -26,14 +26,15 @@ class SocialiteController extends Controller
             if (!is_null($validated))
                 return $validated;
             $providerUser = Socialite::driver($provider)->userFromToken($request->access_provider_token);
-            $user = User::firstOrCreate(
-                [
-                    'email' => $providerUser->getEmail()
-                ],
-                [
-                    'name' => $providerUser->getName(),
-                ]
-            );
+            // var_dump($providerUser->user);die;
+           
+            $user = User::firstOrNew(['email' => $providerUser->email]);
+            $user->lastname = $providerUser->user['family_name'];
+            $user->firstname = $providerUser->user['given_name'];
+            $user->email = $providerUser->email;
+            $user->isVerified = 0;
+            $user->save();
+
             Auth::login($user);
             $data =  [
                 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
@@ -43,7 +44,6 @@ class SocialiteController extends Controller
                 'message' => 'Your account is successfully created and you are logged in',
             ];
             return response()->json($data, 200);
-            
         } catch (\Throwable $th) {
             return response()->json([$th->getMessage()]);
         }

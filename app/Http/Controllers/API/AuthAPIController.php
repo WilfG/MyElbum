@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Twilio\Rest\Client;
 
 class AuthAPIController extends Controller
@@ -17,7 +19,7 @@ class AuthAPIController extends Controller
     public function register(Request $request)
     {
         try {
-            $validator = Validator::make($request->only('lastname','firstname','country','phoneNumber', 'birthDate','username','email','password'), [
+            $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password'), [
                 'lastname' => ['required', 'min:2', 'max:50', 'string'],
                 'firstname' => ['required', 'min:2', 'max:50', 'string'],
                 'country' => ['required', 'min:2', 'max:50', 'string'],
@@ -30,14 +32,14 @@ class AuthAPIController extends Controller
             if ($validator->fails())
                 return response()->json($validator->errors(), 400);
 
-            $input = $request->only('lastname','firstname','country','phoneNumber', 'birthDate','username','email','password');
+            $input = $request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password');
             $input['password'] = Hash::make($request['password']);
             $input['isVerified'] = 0;
             // var_dump($input); die;
             $user = User::create($input);
             event(new Registered($user));
 
-            Auth::login($user);
+            // Auth::login($user);
             $data =  [
                 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                 'user' => $user,
@@ -54,31 +56,69 @@ class AuthAPIController extends Controller
 
     public function login(Request $request)
     {
-        try {
-            // die($request);
-            $validator = Validator::make($request->only('email', 'password'), [
-                'email' => ['required', 'email', 'exists:users,email'],
-                'password' => ['required', 'min:6', 'max:255', 'string'],
-            ]);
-            if ($validator->fails())
-                return response()->json($validator->errors(), 400);
+        try{
+            if (isset($request->email)) {
+                $validator = Validator::make($request->only('email', 'password'), [
+                    'email' => ['required', 'email', 'exists:users,email'],
+                    'password' => ['required', 'min:6', 'max:255', 'string'],
+                ]);
+                if ($validator->fails())
+                    return response()->json($validator->errors(), 400);
 
-            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-                // die;
-                $user = $request->user();
-                $data =  [
-                    'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
-                    'user' => $user,
-                    'status' => Auth::check(),
-                    'message' => 'you are successfully logged in'
-                ];
-                return response()->json($data, 200);
+                if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+                    // die;
+                    $user = $request->user();
+                    Auth::login($user);
+                    $plan = DB::table('plans')->where('user_id', $user->id)->first();
+                    // var_dump($plan->id); die;
+                    $frames = DB::table('frames')
+                    ->join('plans', 'frames.plan_id', '=', 'plans.id')
+                    ->where('plans.user_id', '=', $user->id)
+                    ->select('frames.*', 'plans.id')->get();
+                    $data =  [
+                        'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                        'user' => $user,
+                        'plan' => $plan,
+                        'frames' => $frames,
+                        'status' => Auth::check(),
+                        'message' => 'you are successfully logged in'
+                    ];
+                    return response()->json($data, 200);
+                }
+            } elseif (isset($request->phoneNumber)) {
+                $validator = Validator::make($request->only('phoneNumber', 'password'), [
+                    'phoneNumber' => ['required', 'exists:users,phoneNumber'],
+                    'password' => ['required', 'min:6', 'max:255', 'string'],
+                ]);
+                if ($validator->fails())
+                    return response()->json($validator->errors(), 400);
+
+                if (Auth::attempt(['phoneNumber' => $request->phoneNumber, 'password' => $request->password])) {
+                    // die;
+                    $user = $request->user();
+                    Auth::login($user);
+                    $data =  [
+                        'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                        'user' => $user,
+                        'status' => Auth::check(),
+                        'message' => 'you are successfully logged in'
+                    ];
+                    return response()->json($data, 200);
+                }
             }
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => $th->getMessage()
             ]);
         }
+    }
+
+    public function logout()
+    {
+        // die;
+        Session::flush();
+        Auth::logout();
+        return response()->json(['status' => Auth::check()]);
     }
 
     protected function validatePhoneNumber(Request $request)
@@ -99,9 +139,5 @@ class AuthAPIController extends Controller
         // $user->phone_number = $data['phone_number'];
         // $user->save();
         return redirect()->with(['phone_number' => $data['phone_number']]);
-
-        
     }
-
-
 }

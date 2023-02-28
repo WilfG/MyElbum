@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\API\frameContentsAPIController;
-use App\Http\Controllers\API\framesAPIController;
-use App\Http\Controllers\API\plansAPIController;
+use App\Http\Controllers\API\FrameContentsAPIController;
+use App\Http\Controllers\API\FramesAPIController;
+use App\Http\Controllers\API\PlansAPIController;
 use App\Http\Controllers\API\AuthAPIController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\API\VerificationController;
@@ -21,11 +21,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::resources([
-    'plans' => plansAPIController::class,
-    'frames' => framesAPIController::class,
+    'plans' => PlansAPIController::class,
+    'frames' => FramesAPIController::class,
     'frame_contents' => frameContentsAPIController::class,
 ]);
-
+Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
+Route::get('logout', [AuthAPIController::class, 'logout']);
+Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
+Route::post('frame_contents/updateframecontent/{id}', [FrameContentsAPIController::class, 'updateFrameContent']);
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();
@@ -40,7 +43,7 @@ Route::controller(AuthAPIController::class)->group(function () {
 });
 
 Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
-Route::get('verify-email/{id}/{hash}',[VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
+Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
 
 /**
  * Google Sign up and automatically sign in
@@ -48,4 +51,3 @@ Route::get('verify-email/{id}/{hash}',[VerificationController::class, 'verify'])
 Route::post('/signup-socialite', [SocialiteController::class, 'handleProviderCallback']);
 
 Route::post('validatePhoneNumber', [AuthAPIController::class, 'validatePhoneNumber']);
-
