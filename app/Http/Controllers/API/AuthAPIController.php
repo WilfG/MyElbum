@@ -74,7 +74,7 @@ class AuthAPIController extends Controller
                     // die;
                     $user = $request->user();
                     Auth::login($user);
-                    $plan = DB::table('plans')->where('user_id', $user->id)->first();
+                    $plan = DB::table('plans')->where('user_id', $user->id)->get();
                     // var_dump($plan->id); die;
                     $frames = DB::table('frames')
                     ->join('plans', 'frames.plan_id', '=', 'plans.id')
