@@ -62,6 +62,16 @@ class PlansAPIController extends Controller
             $input = $request->only('plan_title', 'duration_time', 'plan_type', 'storage_capacity', 'user_id');
             // var_dump($input);
             // die;
+            $verify_user_plan = Db::table('plans')->where('plans.user_id', '=', $request->user_id)
+                            ->where('plans.plan_title', '=', $request->plan_title)
+                            ->where('plans.plan_type', '=', $request->plan_type)
+                            ->where('plans.storage_capacity', '=', $request->storage_capacity)
+                            ->where('plans.duration_time', '=', $request->duration_time)->first();
+
+            if ($verify_user_plan) {
+               return response()->json(['error' => 'You already suscribed to this plan, add another plan']);
+            }
+
             $plan = Plan::create($input);
 
             $data = [
@@ -99,7 +109,7 @@ class PlansAPIController extends Controller
 
     public function user_plan($id)
     {
-        $plan = DB::table('plans')->where('user_id', $id)->first();
+        $plan = DB::table('plans')->where('user_id', $id)->get();
         if ($plan) {
             return response()->json(['plan', $plan]);
         } else {

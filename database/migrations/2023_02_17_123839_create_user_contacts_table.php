@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('user_contacts', function (Blueprint $table) {
             $table->id();
+            $table->enum('request_status', ['Pending', 'Confirm', 'Reject'])->default('Pending');
+            $table->enum('request_notification', ['No', 'Yes'])->default('Yes');
             $table->index('user_id');
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->index('contact_id');

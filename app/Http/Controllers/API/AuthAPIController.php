@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -39,6 +40,10 @@ class AuthAPIController extends Controller
             $user = User::create($input);
             event(new Registered($user));
 
+            $contact = Contact::firstOrNew(['id' => $user->id]);
+            $contact->contact_firstname = $user->firstname;
+            $contact->contact_lastname = $user->lastname;
+            $contact->save();
             // Auth::login($user);
             $data =  [
                 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
@@ -75,11 +80,16 @@ class AuthAPIController extends Controller
                     ->join('plans', 'frames.plan_id', '=', 'plans.id')
                     ->where('plans.user_id', '=', $user->id)
                     ->select('frames.*', 'plans.id')->get();
+
+                    $friend_requests = DB::table('user_contacts')
+                    ->where('user_contacts.user_id', '=', $user->id)
+                    ->where('user_contacts.request_status', '=', 'Pending')->get();
                     $data =  [
                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'user' => $user,
                         'plan' => $plan,
                         'frames' => $frames,
+                        'friend_requests' => $friend_requests,
                         'status' => Auth::check(),
                         'message' => 'you are successfully logged in'
                     ];

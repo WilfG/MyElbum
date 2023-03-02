@@ -41,7 +41,13 @@ class FramesAPIController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
-            
+
+            $verify_plan_frame = Db::table('frames')->where('frames.plan_id', '=', $request->plan_id)->first();
+
+            if ($verify_plan_frame) {
+                return response()->json(['error' => 'This frame is already linked to a plan']);
+            }
+
             $input = $request->only('frame_title', 'frame_description', 'plan_id');
             $frame = Frame::create($input);
 

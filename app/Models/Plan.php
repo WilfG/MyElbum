@@ -11,7 +11,7 @@ class Plan extends Model
     protected $fillable = array('plan_title', 'duration_time','plan_type', 'storage_capacity', 'user_id');
 
     public function frames(){
-        return $this->hasMany(Frame::class);
+        return $this->hasOne(Frame::class);
     }
 
     public function user(){

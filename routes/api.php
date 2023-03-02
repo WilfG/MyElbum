@@ -4,6 +4,11 @@ use App\Http\Controllers\API\FrameContentsAPIController;
 use App\Http\Controllers\API\FramesAPIController;
 use App\Http\Controllers\API\PlansAPIController;
 use App\Http\Controllers\API\AuthAPIController;
+use App\Http\Controllers\API\CommentsAPIController;
+use App\Http\Controllers\API\FrameContentCommentsAPIController;
+use App\Http\Controllers\API\FrameContentTagsAPIController;
+use App\Http\Controllers\API\TagsAPIController;
+use App\Http\Controllers\API\UserContactAPIController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\API\VerificationController;
 use Illuminate\Http\Client\Request;
@@ -24,6 +29,11 @@ Route::resources([
     'plans' => PlansAPIController::class,
     'frames' => FramesAPIController::class,
     'frame_contents' => frameContentsAPIController::class,
+    'users_contacts' => UserContactAPIController::class,
+    'comments' => CommentsAPIController::class,
+    'tags' => TagsAPIController::class,
+    'content_comments' => FrameContentCommentsAPIController::class,
+    'content_tags' => FrameContentTagsAPIController::class,
 ]);
 Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
 Route::get('logout', [AuthAPIController::class, 'logout']);
@@ -48,6 +58,6 @@ Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify']
 /**
  * Google Sign up and automatically sign in
  */
-Route::post('/signup-socialite', [SocialiteController::class, 'handleProviderCallback']);
+Route::post('/signup-socialite', [SocialiteController::class, 'googleSignup']);
 
 Route::post('validatePhoneNumber', [AuthAPIController::class, 'validatePhoneNumber']);
