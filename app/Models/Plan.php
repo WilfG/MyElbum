@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Plan extends Model
 {
     use HasFactory;
-    protected $fillable = array('plan_title', 'duration_time','plan_type', 'storage_capacity', 'user_id');
+    protected $fillable = array('plan_title', 'duration_time','plan_type', 'storage_capacity');
 
-    public function frames(){
+    public function frame(){
         return $this->hasOne(Frame::class);
     }
-
-    public function user(){
-        return $this->belongsTo(User::class);
+    
+    public function souscriptions(){
+        return $this->hasMany(Souscription::class);
     }
 }

@@ -18,9 +18,8 @@ return new class extends Migration
             $table->enum('plan_title', ['Free Trial', 'Premium']);
             $table->integer('duration_time');
             $table->enum('plan_type', ['zero','Lite', 'All Go']);
-            $table->enum('storage_capacity', ['8', '16', '32', '64']);
-            $table->index('user_id');
-            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->enum('storage_capacity', ['4', '8', '12', '24', '48']);
+            $table->float('price')->default(0);
             $table->timestamps();
         });
     }

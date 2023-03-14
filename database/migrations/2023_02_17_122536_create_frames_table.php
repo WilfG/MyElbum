@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id(); 
             $table->string('frame_title');
             $table->string('frame_description');
+            $table->enum('frame_status', ['stock', 'archived', 'live'])->nullable()->default('stock');
             $table->unsignedBigInteger('plan_id');
             $table->foreign('plan_id')->references('id')->on('plans')->onDelete('cascade');
             $table->timestamps();

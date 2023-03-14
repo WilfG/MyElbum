@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\UserContact;
+use App\Models\UserContactFriends;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -40,11 +41,19 @@ class UserContactAPIController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
+            if ($request->user_id == $request->contact_id) {
+                return  response()->json(['error' => 'You cannot invite yourself.']);
+            }
+
             $verify_invitation = DB::table('user_contacts')
                 ->where('user_contacts.user_id', '=', $request->user_id)
-                ->where('user_contacts.contact_id', '=', $request->contact_id)->first();
+                ->where('user_contacts.contact_id', '=', $request->contact_id)
+                ->orWhere(function ($query) use ($request) {
+                    $query->where('user_contacts.user_id', '=', $request->contact_id)
+                        ->where('user_contacts.contact_id', '=', $request->user_id);
+                })->first();
             if ($verify_invitation) {
-                return  response()->json(['error' => 'You are already friends']);
+                return  response()->json(['error' => 'You are already friends, or your invitation is pending..']);
             }
 
             $input = $request->only('user_id', 'contact_id');
@@ -97,13 +106,28 @@ class UserContactAPIController extends Controller
             }
 
             if ($request->request_status == 'Confirm') {
-                $invitation = UserContact::where('id', $id)->first();
+
+                for ($i = 0; $i < 2; $i++) {
+                    if ($i == 0) {
+                        $usercontactfriends = UserContactFriends::create([
+                            'user_id' => $request->user_id,
+                            'contact_id' => $request->contact_id,
+                        ]);
+                    }
+                    if ($i == 1) {
+                        $usercontactfriends = UserContactFriends::create([
+                            'user_id' => $request->contact_id,
+                            'contact_id' => $request->user_id,
+                        ]);
+                    }
+                }
+                $invitation = UserContact::where('user_id', $request->user_id)->where('contact_id', $request->contact_id)->first();
                 $invitation->request_status = $request->request_status;
                 $invitation->request_notification = 'No';
                 $invitation->save();
                 return response()->json(['message' => 'Invitation accepted', 'status' => true]);
             } elseif ($request->request_status == 'Reject') {
-                $invitation = UserContact::where('id', $id)->first();
+                $invitation = UserContact::where('user_id', $request->user_id)->where('contact_id', $request->contact_id)->first();
                 $invitation->delete();
                 return response()->json(['message' => 'Invitation rejected', 'status' => false]);
             }
@@ -120,6 +144,5 @@ class UserContactAPIController extends Controller
      */
     public function destroy($id)
     {
-       
     }
 }

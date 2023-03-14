@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Twilio\Rest\Client;
 
@@ -44,7 +43,7 @@ class AuthAPIController extends Controller
             $contact->contact_firstname = $user->firstname;
             $contact->contact_lastname = $user->lastname;
             $contact->save();
-            // Auth::login($user);
+            Auth::login($user);
             $data =  [
                 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                 'user' => $user,

@@ -13,13 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('frame_contents', function (Blueprint $table) {
+        Schema::create('user_contact_friends', function (Blueprint $table) {
             $table->id();
-            $table->enum('content_type', ['image', 'video']);
-            $table->string('filepath');
-            $table->enum('content_status', ['bin', 'live'])->nullable()->default('live');
-            $table->index('frame_id');
-            $table->foreignId('frame_id')->references('id')->on('frames')->onDelete('cascade');
+            $table->index('user_id');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->index('contact_id');
+            $table->foreignId('contact_id')->references('id')->on('contacts')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('frame_contents');
+        Schema::dropIfExists('user_contacts_friends');
     }
 };

@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('frame_contents', function (Blueprint $table) {
+        Schema::create('frame_bins', function (Blueprint $table) {
             $table->id();
-            $table->enum('content_type', ['image', 'video']);
-            $table->string('filepath');
-            $table->enum('content_status', ['bin', 'live'])->nullable()->default('live');
             $table->index('frame_id');
             $table->foreignId('frame_id')->references('id')->on('frames')->onDelete('cascade');
+            $table->index('frame_content_id');
+            $table->foreignId('frame_content_id')->references('id')->on('frame_contents')->onDelete('cascade');
+            $table->timestamp('delete_date');
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('frame_contents');
+        Schema::dropIfExists('frame_bins');
     }
 };

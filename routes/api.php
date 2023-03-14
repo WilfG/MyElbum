@@ -5,6 +5,7 @@ use App\Http\Controllers\API\FramesAPIController;
 use App\Http\Controllers\API\PlansAPIController;
 use App\Http\Controllers\API\AuthAPIController;
 use App\Http\Controllers\API\CommentsAPIController;
+use App\Http\Controllers\API\ContactsAPIController;
 use App\Http\Controllers\API\FrameContentCommentsAPIController;
 use App\Http\Controllers\API\FrameContentTagsAPIController;
 use App\Http\Controllers\API\TagsAPIController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\API\UserContactAPIController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\API\VerificationController;
 use Illuminate\Http\Client\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,11 +36,19 @@ Route::resources([
     'tags' => TagsAPIController::class,
     'content_comments' => FrameContentCommentsAPIController::class,
     'content_tags' => FrameContentTagsAPIController::class,
+    'contacts' => ContactsAPIController::class,
 ]);
+
 Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
 Route::get('logout', [AuthAPIController::class, 'logout']);
+Route::get('user_frame/{id}', [FramesAPIController::class, 'userFrame']);
+Route::get('user_contacts/{id}', [ContactsAPIController::class, 'userContacts']);
 Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
 Route::post('frame_contents/updateframecontent/{id}', [FrameContentsAPIController::class, 'updateFrameContent']);
+Route::post('frame_transfert_verif', [FramesAPIController::class, 'frame_transfert_verif']);
+Route::post('transfer_frame', [FramesAPIController::class, 'transfer_frame']);
+Route::post('frame_reset', [FramesAPIController::class, 'frame_reset']);
+Route::delete('restore_frame/{id}', [FrameContentsAPIController::class, 'restore_frame']);
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();
@@ -50,8 +60,14 @@ Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $r
 Route::controller(AuthAPIController::class)->group(function () {
     Route::post('register', 'register'); // done but email verify not yet ready
     Route::post('login', 'login');
+    Route::post('validatePhoneNumber', 'validatePhoneNumber');
 });
 
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+ 
 Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
 Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
 
@@ -59,5 +75,5 @@ Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify']
  * Google Sign up and automatically sign in
  */
 Route::post('/signup-socialite', [SocialiteController::class, 'googleSignup']);
+Route::post('/signin-socialite', [SocialiteController::class, 'googleSignin']);
 
-Route::post('validatePhoneNumber', [AuthAPIController::class, 'validatePhoneNumber']);

@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
-    public function plan(){
-        return $this->hasMany(Plan::class);
+    public function souscriptions(){
+        return $this->hasMany(Souscription::class);
     }
 }
