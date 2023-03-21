@@ -102,25 +102,25 @@ class PlansAPIController extends Controller
                     $input['ends_at'] = $ends_at = Carbon::now()->addMonths(60);
                 }
 
-                // $stripe = new \Stripe\StripeClient(
-                //     env('STRIPE_SECRET_KEY')
-                // );
-                // $res = $stripe->tokens->create([
-                //     'card' => [
-                //         'number' => $request->card_number,
-                //         'exp_month' => $request->exp_month,
-                //         'exp_year' => $request->exp_year,
-                //         'cvc' => $request->cvc,
-                //     ],
-                // ]);
+                $stripe = new \Stripe\StripeClient(
+                    env('STRIPE_SECRET_KEY')
+                );
+                $res = $stripe->tokens->create([
+                    'card' => [
+                        'number' => $request->card_number,
+                        'exp_month' => $request->exp_month,
+                        'exp_year' => $request->exp_year,
+                        'cvc' => $request->cvc,
+                    ],
+                ]);
 
-                // Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-                // $response =  $stripe->charges->create([
-                //     'amount' => $choosen_plan->price,
-                //     'currency' => 'usd',
-                //     'source' => $res->id,
-                //     'description' => 'The user ' . $user_exist->lastname . ' purchased a ' . $choosen_plan->plan_title . ' ' . $choosen_plan->plan_type . ' plan with a storage capacity of ' . $choosen_plan->storage_capacity . ' for a period of ' . $choosen_plan->duration_time . ' months.',
-                // ]);
+                Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+                $response =  $stripe->charges->create([
+                    'amount' => $choosen_plan->price,
+                    'currency' => 'usd',
+                    'source' => $res->id,
+                    'description' => 'The user ' . $user_exist->lastname . ' purchased a ' . $choosen_plan->plan_title . ' ' . $choosen_plan->plan_type . ' plan with a storage capacity of ' . $choosen_plan->storage_capacity . ' for a period of ' . $choosen_plan->duration_time . ' months.',
+                ]);
 
 
                 $souscription = Souscription::create($input);

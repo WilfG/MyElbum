@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
            $new = new FrameContentsAPIController();
            $new->empty_bin();
-        })->dailyAt('22:52');
+        })->everySixHours();
     }
 
     /**

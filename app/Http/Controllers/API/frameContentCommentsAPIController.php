@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\FrameContentComment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class FrameContentCommentsAPIController extends Controller
@@ -104,4 +105,25 @@ class FrameContentCommentsAPIController extends Controller
             return response()->json(['message', 'Content Comment not found']);
         }
     }
+
+     /**
+     * FrameContentsComments
+     */
+
+     public function frameContentComments ($id){
+
+        try {
+             $frameComments = DB::table('frame_content_comments')
+            ->join('contacts', 'frame_content_comments.contact_id', 'contacts.id')
+            ->where('frame_content_comments.frame_content_id', $id)
+            ->select('frame_content_comments.*', 'contacts.*')
+            ->get();
+            return response()->json([
+                'frame_content_comments' => $frameComments,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage()]);
+
+        }
+     }
 }

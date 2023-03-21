@@ -205,9 +205,32 @@ class FramesAPIController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Frame $frame)
     {
-        //
+        try {
+            //code...
+            $validator = Validator::make($request->only('frame_title', 'frame_description'), [
+                'frame_title' => ['string'],
+                'frame_description' => ['string'],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+            $frame->update([
+                'frame_title' => $request->frame_title,
+                'frame_description' => $request->frame_description,
+            ]);
+
+            return response()->json([
+                'frame' => $frame,
+                'message' => 'Frame successfully updated'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
     }
 
     /**

@@ -323,15 +323,15 @@ class FrameContentsAPIController extends Controller
         foreach ($frame_bins as $key => $bin) {
             if (Carbon::now()->gt($bin->delete_date)) {
                 $content_id = $bin->frame_content_id;
+                // die($content_id); break;
                 $bin->delete();
-                // $frame_content = FrameContent::where('id', $content_id)->first();
-                // if ($frame_content) {
-                //     unlink($frame_content->filepath);
-                //     $frame_content->delete();
-                // }
+                $frame_content = FrameContent::where('id', $content_id)->where('content_status', 'bin')->first();
+                if ($frame_content) {
+                    unlink(public_path($frame_content->filepath));
+                    return $frame_content->delete();
+                }
             }
         }
-        return ;
     }
 
     /**

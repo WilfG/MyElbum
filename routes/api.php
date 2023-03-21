@@ -8,10 +8,14 @@ use App\Http\Controllers\API\CommentsAPIController;
 use App\Http\Controllers\API\ContactsAPIController;
 use App\Http\Controllers\API\FrameContentCommentsAPIController;
 use App\Http\Controllers\API\FrameContentTagsAPIController;
+use App\Http\Controllers\API\NotificationsAPIController;
+use App\Http\Controllers\API\ReactionsAPIController;
 use App\Http\Controllers\API\TagsAPIController;
 use App\Http\Controllers\API\UserContactAPIController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\API\VerificationController;
+use App\Models\Comment;
+use App\Models\FrameContentComment;
 use Illuminate\Http\Client\Request;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +41,8 @@ Route::resources([
     'content_comments' => FrameContentCommentsAPIController::class,
     'content_tags' => FrameContentTagsAPIController::class,
     'contacts' => ContactsAPIController::class,
+    'reactions' => ReactionsAPIController::class,
+    'notifications' => NotificationsAPIController::class,
 ]);
 
 Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
@@ -49,6 +55,8 @@ Route::post('frame_transfert_verif', [FramesAPIController::class, 'frame_transfe
 Route::post('transfer_frame', [FramesAPIController::class, 'transfer_frame']);
 Route::post('frame_reset', [FramesAPIController::class, 'frame_reset']);
 Route::delete('restore_frame/{id}', [FrameContentsAPIController::class, 'restore_frame']);
+Route::get('frameComments/{id}', [CommentsAPIController::class, 'frameComments']);
+Route::get('frameContentComments/{id}', [FrameContentCommentsAPIController::class, 'frameContentComments']);
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();
@@ -61,6 +69,7 @@ Route::controller(AuthAPIController::class)->group(function () {
     Route::post('register', 'register'); // done but email verify not yet ready
     Route::post('login', 'login');
     Route::post('validatePhoneNumber', 'validatePhoneNumber');
+    Route::post('updateUser/{user}', 'updateUser');
 });
 
 Route::get('/email/verify', function () {

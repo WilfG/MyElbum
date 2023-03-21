@@ -22,9 +22,9 @@ class AuthAPIController extends Controller
             $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password'), [
                 'lastname' => ['required', 'min:2', 'max:50', 'string'],
                 'firstname' => ['required', 'min:2', 'max:50', 'string'],
-                'country' => ['required', 'min:2', 'max:50', 'string'],
-                'phoneNumber' => ['required', 'min:2', 'max:50', 'string'],
-                'birthDate' => ['required', 'min:2', 'max:50', 'string'],
+                'country' => ['required', 'string'],
+                'phoneNumber' => ['required', 'min:8', 'max:15', 'string'],
+                'birthDate' => ['required', 'string'],
                 'username' => ['required', 'min:2', 'max:50', 'string'],
                 'email' => ['required', 'email', 'unique:users,email'],
                 'password' => ['required', 'min:6', 'max:255', 'string'],
@@ -60,7 +60,7 @@ class AuthAPIController extends Controller
 
     public function login(Request $request)
     {
-        try{
+        try {
             if (isset($request->email)) {
                 $validator = Validator::make($request->only('email', 'password'), [
                     'email' => ['required', 'email', 'exists:users,email'],
@@ -73,16 +73,20 @@ class AuthAPIController extends Controller
                     // die;
                     $user = $request->user();
                     Auth::login($user);
-                    $plan = DB::table('plans')->where('user_id', $user->id)->get();
+                    $plan = DB::table('souscriptions')
+                    ->join('plans', 'souscriptions.plan_id', 'plans.id')
+                    ->where('souscriptions.user_id', $user->id)
+                    ->select('plans.*')
+                    ->get();
                     // var_dump($plan->id); die;
                     $frames = DB::table('frames')
-                    ->join('plans', 'frames.plan_id', '=', 'plans.id')
-                    ->where('plans.user_id', '=', $user->id)
-                    ->select('frames.*', 'plans.id')->get();
+                        ->join('souscriptions', 'frames.plan_id', 'souscriptions.plan_id')
+                        ->where('souscriptions.user_id', '=', $user->id)
+                        ->select('frames.*')->get();
 
                     $friend_requests = DB::table('user_contacts')
-                    ->where('user_contacts.user_id', '=', $user->id)
-                    ->where('user_contacts.request_status', '=', 'Pending')->get();
+                        ->where('user_contacts.user_id', '=', $user->id)
+                        ->where('user_contacts.request_status', '=', 'Pending')->get();
                     $data =  [
                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'user' => $user,
@@ -148,5 +152,46 @@ class AuthAPIController extends Controller
         // $user->phone_number = $data['phone_number'];
         // $user->save();
         return redirect()->with(['phone_number' => $data['phone_number']]);
+    }
+
+
+    public function updateUser(Request $request, User $user)
+    {
+        try {
+            $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'picture'), [
+                'lastname' => ['required', 'min:2', 'max:50', 'string'],
+                'firstname' => ['required', 'min:2', 'max:50', 'string'],
+                'country' => ['required', 'string'],
+                'phoneNumber' => ['required', 'min:8', 'max:15', 'string'],
+                'birthDate' => ['required', 'string'],
+                'username' => ['required', 'min:2', 'max:50', 'string'],
+                'email' => ['required', 'email',],
+                'password' => ['required', 'min:6', 'max:255', 'string'],
+                'picture' => 'required',
+                'picture' => 'file|mimes:jpeg,jpg,png,gif,PNG,JPG,JPEG',
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 400);
+
+            $input = $request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password');
+            $input['password'] = Hash::make($request['password']);
+
+            if ($request->hasfile('picture')) {
+                $ext = explode('.', $request->picture->getClientOriginalName())[1];
+                $filename  = $user->firstname . '_' . $user->lastname . '_avatar_' . date('Ymd') . '_' . time() . '.' . $ext;
+                $path = 'Users_pictures/' . $user->firstname . '_' . $user->lastname;
+                $input['profil_picture'] = $path . '/' . $filename;
+                $request->picture->move(public_path($path), $filename);
+            }
+
+            $user->update($input);
+
+            return response()->json([
+                'user' => $input,
+                'message' => 'User informations successfully updated'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json($th->getMessage(), 500);
+        }
     }
 }
