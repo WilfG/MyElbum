@@ -22,6 +22,13 @@ class UserContactAPIController extends Controller
         //
     }
 
+    public function friend_requests($user_id){
+        $friend_requests = DB::table('user_contacts')
+        ->where('user_contacts.user_id', '=', $user_id)
+        ->where('user_contacts.request_status', '=', 'Pending')->get();
+
+        return response()->json(['friend_requests' => $friend_requests]);
+    }
     /**
      * Store a newly created resource in storage.
      *
