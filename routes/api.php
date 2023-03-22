@@ -57,6 +57,10 @@ Route::post('frame_reset', [FramesAPIController::class, 'frame_reset']);
 Route::delete('restore_frame/{id}', [FrameContentsAPIController::class, 'restore_frame']);
 Route::get('frameComments/{id}', [CommentsAPIController::class, 'frameComments']);
 Route::get('frameContentComments/{id}', [FrameContentCommentsAPIController::class, 'frameContentComments']);
+Route::get('reactionByFrame/{id}', [ReactionsAPIController::class, 'reactionByFrame']);
+Route::get('reactionByFrameContent/{id}', [ReactionsAPIController::class, 'reactionByFrameContent']);
+Route::get('reactionBycomment/{id}', [ReactionsAPIController::class, 'reactionBycomment']);
+Route::get('reactionByFrameContentComment/{id}', [ReactionsAPIController::class, 'reactionByFrameContentComment']);
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();

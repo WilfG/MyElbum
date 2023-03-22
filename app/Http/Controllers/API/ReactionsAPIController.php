@@ -18,7 +18,8 @@ class ReactionsAPIController extends Controller
      */
     public function index()
     {
-        //
+        $reactions = DB::table('reactions')->get();
+        return response()->json(['reactions' => $reactions]);
     }
 
     /**
@@ -40,10 +41,11 @@ class ReactionsAPIController extends Controller
                 ]);
 
                 if ($request->frame_id) {
-                    $post_id =  $request->frame_id;
+                    $post_id =  'frame_' . $request->frame_id;
                 }
+
                 if ($request->frame_content_id) {
-                    $post_id =  $request->frame_content_id;
+                    $post_id =  'frameContent_' . $request->frame_content_id;
                 }
             } else {
                 $validator = Validator::make($request->only('type', 'user_id', 'contact_id', 'frame_id', 'frame_content_id', 'comment_id', 'content_comment_id'), [
@@ -86,24 +88,63 @@ class ReactionsAPIController extends Controller
                         ->orWhere('comment_id', $request->comment_id)
                         ->orWhere('content_comment_id', $request->content_comment_id);
                 })->first();
-            if ($reaction_verif) {
+
+            if (!isset($reaction_verif->frame_id) && !isset($reaction_verif->frame_content_id) && !isset($reaction_verif->comment_id) && !isset($reaction_verif->content_comment_id)) {
+                // var_dump($reaction_verif);die;
                 if ($reaction_verif->type == 'like') {
-                    $reaction = Reaction::find($reaction_verif->id)->first();
-                    $reaction->delete();
+                    if (isset($request->frame_id) && $reaction_verif->frame_id == $request->frame_id) {
+                        $reaction = Reaction::where('id', $reaction_verif->id)
+                            ->where('user_id', $request->user_id)
+                            ->where('frame_id', $request->frame_id)->first();
+                        $reaction->delete();
+                    }
+                    if (isset($request->frame_content_id) && $reaction_verif->frame_content_id == $request->frame_content_id) {
+                        $reaction = Reaction::where('id', $reaction_verif->id)
+                            ->where('user_id', $request->user_id)
+                            ->where('frame_content_id', $request->frame_content_id)->first();
+                        $reaction->delete();
+                    }
+                    if (isset($request->comment_id) && $reaction_verif->comment_id == $request->comment_id) {
+                        // var_dump($reaction_verif->comment_id);die;
+                        $reaction = Reaction::where('id', $reaction_verif->id)
+                            ->where('user_id', $request->user_id)
+                            ->where('comment_id', $request->frame_id)->first();
+                        $reaction->delete();
+                    }
+                    if (isset($request->content_comment_id) && $reaction_verif->content_comment_id == $request->content_comment_id) {
+                        $reaction = Reaction::where('id', $reaction_verif->id)
+                            ->where('user_id', $request->user_id)
+                            ->where('content_comment_id', $request->content_comment_id)->first();
+                        $reaction->delete();
+                    }
 
                     return response()->json(['message' => 'Unliked']);
                 } else {
                     return response()->json(['message' => 'Already viewed']);
                 }
-                
             } else {
-                $reaction = Reaction::create($input);
-                $notification = Notification::create([
-                    'action' => $request->type,
-                    'user_id' => $request->user_id,
-                    'contact_id' => $request->contact_id,
-                    'post_id' => $post_id,
-                ]);
+                $verif_again = DB::table('reactions')
+                    ->where('type', '=', $request->type)
+                    ->where(function ($query) use ($request) {
+                        $query->orWhere('frame_id', $request->frame_id)
+                            ->orWhere('frame_content_id', $request->frame_content_id)
+                            ->orWhere('comment_id', $request->comment_id)
+                            ->orWhere('content_comment_id', $request->content_comment_id);
+                    })->first();
+                    
+                if (!$verif_again) {
+                    $reaction = Reaction::create($input);
+                    $notification = Notification::create([
+                        'action' => $request->type,
+                        'user_id' => $request->user_id,
+                        'contact_id' => $request->contact_id,
+                        'post_id' => $post_id,
+                    ]);
+                }else {
+                    if ($verif_again->type == 'like') {
+
+                    }
+                }
                 $data = [
                     'notification' => $notification,
                     'reaction' => $reaction,
@@ -148,5 +189,41 @@ class ReactionsAPIController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function reactionByFrame($id)
+    {
+        $reactions =  DB::table('reactions')
+            ->join('contacts', 'reactions.contact_id', 'contacts.id')
+            ->where('reactions.frame_id', $id)
+            ->get();
+        return response()->json(['reactions' => $reactions]);
+    }
+
+    public function reactionByFrameContent($id)
+    {
+        $reactions =  DB::table('reactions')
+            ->join('contacts', 'reactions.contact_id', 'contacts.id')
+            ->where('reactions.frame_content_id', $id)
+            ->get();
+        return response()->json(['reactions' => $reactions]);
+    }
+
+    public function reactionBycomment($id)
+    {
+        $likes =  DB::table('reactions')
+            ->join('contacts', 'reactions.contact_id', 'contacts.id')
+            ->where('reactions.comment_id', $id)
+            ->get();
+        return response()->json(['likes' => $likes]);
+    }
+
+    public function reactionByFrameContentComment($id)
+    {
+        $likes =  DB::table('reactions')
+            ->join('contacts', 'reactions.contact_id', 'contacts.id')
+            ->where('reactions.content_comment_id', $id)
+            ->get();
+        return response()->json(['likes' => $likes]);
     }
 }
