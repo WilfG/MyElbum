@@ -61,6 +61,7 @@ Route::get('reactionByFrame/{id}', [ReactionsAPIController::class, 'reactionByFr
 Route::get('reactionByFrameContent/{id}', [ReactionsAPIController::class, 'reactionByFrameContent']);
 Route::get('reactionBycomment/{id}', [ReactionsAPIController::class, 'reactionBycomment']);
 Route::get('reactionByFrameContentComment/{id}', [ReactionsAPIController::class, 'reactionByFrameContentComment']);
+Route::get('friend_requests/{user_id}', [UserContactAPIController::class, 'friend_requests']);
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();
