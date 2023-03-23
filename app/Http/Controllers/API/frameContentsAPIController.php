@@ -49,17 +49,17 @@ class FrameContentsAPIController extends Controller
                 'path.*' => 'file|mimes:m4v,avi,flv,mp4,mov,jpeg,jpg,png,gif,PNG,JPG,JPEG,GIF',
                 'frame_id' => ['required', 'numeric'],
                 'user_id' => ['required', 'numeric'],
-                'pan' => ['required', 'numeric'],
-                'zoom' => ['required', 'numeric'],
-                'height' => ['required', 'numeric'],
-                'width' => ['required', 'numeric'],
-                'position' => ['required', 'numeric'],
-                'size' => ['required', 'numeric'],
+                'pan.*' => ['required', 'string'],
+                'zoom.*' => ['required', 'string'],
+                'height.*' => ['required', 'string'],
+                'width.*' => ['required', 'string'],
+                'position.*' => ['required', 'string'],
+                'size.*' => ['required', 'string'],
             ]);
-
+            // var_dump();die;
             if ($validator->fails())
                 return response()->json($validator->errors(), 400);
-
+            // var_dump($request->pan);die;
             if ($request->hasfile('path')) {
                 $number_of_arriving_file = (count($request->file('path')));
                 $number_of_existing_files = DB::table('frame_contents')->where('frame_id', '=', $request->frame_id)->count();
@@ -77,6 +77,13 @@ class FrameContentsAPIController extends Controller
                     return response()->json(['error' => 'you can not add content to this frame because your are not the owner.']);
                 }
 
+
+                $pan = explode(';', $request->pan);
+                $zoom = explode(';', $request->zoom);
+                $height = explode(';', $request->height);
+                $width = explode(';', $request->width);
+                $position = explode(';', $request->position);
+                $size = explode(';', $request->size);
                 $total = $number_of_arriving_file + $number_of_existing_files;
                 $storage_capacity = (int)$plan->storage_capacity;
 
@@ -114,7 +121,7 @@ class FrameContentsAPIController extends Controller
 
                         $filename  = $user->firstname . '_' . $user->lastname . '_' . $frame->frame_title . '_' . date('Ymd') . '_' . (time() + $key) . '.' . $extension;
 
-                        $input = $request->only('content_type', 'filepath', 'frame_id',  'pan', 'zoom', 'height', 'width', 'position', 'size');
+                        $input = $request->only('content_type', 'filepath', 'frame_id',  $pan[$key], $zoom[$key], $height[$key], $width[$key], $position[$key], $size[$key]);
 
                         $path = 'Users_frames/' . $user->firstname . '_' . $user->lastname . '/frame_' . $request->frame_id;
 
@@ -230,7 +237,7 @@ class FrameContentsAPIController extends Controller
 
 
                 $user = DB::table('users')->where('users.id', '=', $request->user_id)->first();
-                
+
                 $filename  = $user->firstname . '_' . $user->lastname . '_' . $frame->frame_title . '_' . date('Ymd') . '_' . time() . '.' . $extension;
                 $path = 'Users_frames/' . $user->firstname . '_' . $user->lastname . '/frame_' . $request->frame_id;
 
