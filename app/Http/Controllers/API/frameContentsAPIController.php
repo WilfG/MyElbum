@@ -62,7 +62,7 @@ class FrameContentsAPIController extends Controller
                 $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
                 // $user = DB::table('users')->where('id', '=', $request->user_id)->first();
                 $user = DB::table('souscriptions')
-                    ->join('users', 'souscriptions.user_id', 'users.id',)
+                    ->join('users', 'souscriptions.user_id', 'users.id')
                     ->where('souscriptions.user_id', '=', $request->user_id)
                     ->where('souscriptions.plan_id', '=', $plan->id)
                     ->select('users.*')->first();
@@ -272,7 +272,7 @@ class FrameContentsAPIController extends Controller
                 $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
 
                 $user = DB::table('souscriptions')
-                    ->join('users', 'souscriptions.user_id', 'users.id',)
+                    ->join('users', 'souscriptions.user_id', 'users.id')
                     ->where('souscriptions.user_id', '=', $request->user_id)
                     ->where('souscriptions.plan_id', '=', $plan->id)
                     ->select('users.*')->first();
@@ -312,8 +312,8 @@ class FrameContentsAPIController extends Controller
             } else {
                 return response()->json(['message', 'Frame contents not found']);
             }
-        } catch (\Throwable) {
-            return response()->json($validator->errors(), 400);
+        } catch (\Throwable $th) {
+            return response()->json($th->getMessage(), 400);
         }
     }
 
@@ -359,7 +359,7 @@ class FrameContentsAPIController extends Controller
                 $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
 
                 $user = DB::table('souscriptions')
-                    ->join('users', 'souscriptions.user_id', 'users.id',)
+                    ->join('users', 'souscriptions.user_id', 'users.id')
                     ->where('souscriptions.user_id', '=', $request->user_id)
                     ->where('souscriptions.plan_id', '=', $plan->id)
                     ->select('users.*')->first();
@@ -387,8 +387,8 @@ class FrameContentsAPIController extends Controller
             } else {
                 return response()->json(['message', 'Frame contents not found']);
             }
-        } catch (\Throwable) {
-            return response()->json($validator->errors(), 400);
+        } catch (\Throwable $th) {
+            return response()->json($th->getMessage(), 400);
         }
     }
 

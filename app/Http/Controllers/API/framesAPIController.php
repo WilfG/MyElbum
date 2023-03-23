@@ -135,7 +135,7 @@ class FramesAPIController extends Controller
             $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
 
             $user = DB::table('souscriptions')
-                ->join('users', 'souscriptions.user_id', 'users.id',)
+                ->join('users', 'souscriptions.user_id', 'users.id')
                 ->where('souscriptions.user_id', '=', $request->user_id)
                 ->where('souscriptions.plan_id', '=', $plan->id)
                 ->select('users.*')->first();
@@ -271,7 +271,7 @@ class FramesAPIController extends Controller
             $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
 
             $user = DB::table('souscriptions')
-                ->join('users', 'souscriptions.user_id', 'users.id',)
+                ->join('users', 'souscriptions.user_id', 'users.id')
                 ->where('souscriptions.user_id', '=', $request->user_id)
                 ->where('souscriptions.plan_id', '=', $plan->id)
                 ->select('users.*')->first();
@@ -288,13 +288,49 @@ class FramesAPIController extends Controller
             // var_dump($frame_contents); die;
 
             $frame_contents = FrameContent::where('frame_id', $request->frame_id);
-            
+
             if ($frame_contents->delete()) {
                 return response()->json(['response' => 'Frame successfully reset']);
             } else {
                 return response()->json(['error' => 'Error when resetting a frame']);
             }
-        } catch (\Throwable) {
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
+        }
+    }
+
+    public function add_thumbnail_to_frame(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->only('path', 'frame_id'), [
+                'thumbnail' => 'required',
+                'thumbnail' => 'file|mimes:jpeg,jpg,png,gif,PNG,JPG,JPEG,GIF',
+                'frame_id' => ['required', 'numeric'],
+            ]);
+
+            if ($validator->fails())
+                return response()->json($validator->errors(), 400);
+
+            $extension = explode('.', $request->thumbnail->getClientOriginalName())[1];
+            $filename  = 'frame_' . $request->frame_id . '_' . date('Ymd') . '_' . time() . '.' . $extension;
+            $path = 'Frame_thumbnails/frame_' . $request->frame_id;
+            // die($path);
+
+            
+            $frame = Frame::find($request->frame_id);
+            if ($frame->thumbnail) {
+                // die($frame->thumbnail);
+                # code...
+                unlink(public_path($frame->thumbnail));
+            }
+            $frame->thumbnail = $path .'/'. $filename;
+            $request->file('thumbnail')->move(public_path($path), $filename);
+            
+            if ($frame->save()) {
+                return response()->json(['message' => 'Thumbnail successfully added to frame']);
+            }
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
         }
     }
 }
