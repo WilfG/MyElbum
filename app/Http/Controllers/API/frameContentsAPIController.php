@@ -121,11 +121,17 @@ class FrameContentsAPIController extends Controller
 
                         $filename  = $user->firstname . '_' . $user->lastname . '_' . $frame->frame_title . '_' . date('Ymd') . '_' . (time() + $key) . '.' . $extension;
 
-                        $input = $request->only('content_type', 'filepath', 'frame_id',  $pan[$key], $zoom[$key], $height[$key], $width[$key], $position[$key], $size[$key]);
+                        $input = $request->only('content_type', 'filepath', 'frame_id', 'pan', 'zoom', 'height', 'width', 'position', 'size');
 
                         $path = 'Users_frames/' . $user->firstname . '_' . $user->lastname . '/frame_' . $request->frame_id;
 
                         $input['filepath'] = $path . '/' . $filename;
+                        $input['pan'] = $pan[$key];
+                        $input['zoom'] = $zoom[$key];
+                        $input['height'] = $height[$key];
+                        $input['width'] = $width[$key];
+                        $input['position'] = $position[$key];
+                        $input['size'] = $size[$key];
                         if (in_array($extension, $tab_extensions)) {
                             $input['content_type'] = 'video';
                         }
