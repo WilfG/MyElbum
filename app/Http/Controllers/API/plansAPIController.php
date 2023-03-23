@@ -73,6 +73,7 @@ class PlansAPIController extends Controller
                 ->where('storage_capacity', '=', $request->storage_capacity)
                 ->where('plan_type', '=', $request->plan_type)->first();
 
+                // var_dump($choosen_plan);die;
 
             $verify_user_plan = Db::table('souscriptions')
                 ->join('plans', 'souscriptions.plan_id', 'plans.id')
@@ -84,7 +85,6 @@ class PlansAPIController extends Controller
             if ($verify_user_plan) {
                 return response()->json(['error' => 'You already suscribed to this plan, add another plan']);
             }
-            
             $input = $request->only('user_id');
             $input['plan_id'] = $choosen_plan->id;
 

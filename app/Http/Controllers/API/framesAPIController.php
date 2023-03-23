@@ -316,16 +316,14 @@ class FramesAPIController extends Controller
             $path = 'Frame_thumbnails/frame_' . $request->frame_id;
             // die($path);
 
-            
+
             $frame = Frame::find($request->frame_id);
             if ($frame->thumbnail) {
-                // die($frame->thumbnail);
-                # code...
                 unlink(public_path($frame->thumbnail));
             }
-            $frame->thumbnail = $path .'/'. $filename;
+            $frame->thumbnail = $path . '/' . $filename;
             $request->file('thumbnail')->move(public_path($path), $filename);
-            
+
             if ($frame->save()) {
                 return response()->json(['message' => 'Thumbnail successfully added to frame']);
             }

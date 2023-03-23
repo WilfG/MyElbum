@@ -9,7 +9,7 @@ class FrameContent extends Model
 {
     use HasFactory;
 
-    protected $fillable = array('content_type', 'filepath', 'content_type', 'frame_id');
+    protected $fillable = array('content_type', 'filepath', 'pan', 'zoom', 'height', 'width', 'position', 'size' ,'content_type', 'frame_id');
 
     public function frame(){
         return $this->belongsTo(Frame::class);
