@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class NotificationsAPIController extends Controller
 {
@@ -14,8 +15,9 @@ class NotificationsAPIController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $notifications = DB::table('notifications')->get();
+        // ->where('user_id', Auth::id())->get(); // à améliorer
+        return response()->json(['notifications' => $notifications]);    }
 
     /**
      * Store a newly created resource in storage.
