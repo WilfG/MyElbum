@@ -184,7 +184,7 @@ class PlansAPIController extends Controller
         ->join('souscriptions', 'plans.id', 'souscriptions.plan_id')
         ->where('souscriptions.user_id', $id)->get();
         if ($plan) {
-            return response()->json(['plan', $plan]);
+            return response()->json(['plan' => $plan]);
         } else {
             return response()->json(['message' => 'Plan not found']);
         }
