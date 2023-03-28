@@ -64,6 +64,7 @@ Route::get('reactionByFrameContentComment/{id}', [ReactionsAPIController::class,
 Route::get('friend_requests/{user_id}', [UserContactAPIController::class, 'friend_requests']);
 Route::post('add_thumbnail_to_frame', [FramesAPIController::class, 'add_thumbnail_to_frame']);
 Route::get('usersTaggedOnFrame/{id}', [TagsAPIController::class, 'usersTaggedOnFrame']);
+Route::get('userNotifications/{id}', [NotificationsAPIController::class, 'userNotifications']);
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();

@@ -40,6 +40,13 @@ class NotificationsAPIController extends Controller
     {
         //
     }
+    public function userNotifications($id)
+    {
+        $notifications = DB::table('notifications')
+        ->where('user_id', '=', $id)->get();
+
+        return response()->json(['user_notifications' => $notifications]);
+    }
 
     /**
      * Update the specified resource in storage.
