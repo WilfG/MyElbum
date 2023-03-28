@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Frame;
 use App\Models\FrameContent;
+use App\Models\Notification;
 use App\Models\Souscription;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -130,6 +131,7 @@ class FramesAPIController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+            $post_id = 'frame_'. $request->frame_id;
 
             $frame = DB::table('frames')->where('frames.id', '=', $request->frame_id)->first();
             $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
@@ -161,11 +163,20 @@ class FramesAPIController extends Controller
             // die('ok');
             $souscription = Souscription::where('souscriptions.user_id', $request->user_id)
                 ->where('souscriptions.plan_id', $plan->id)->first();
-            $souscription->user_id = $request->receiver_id;
-            $souscription->save();
-
-            if ($souscription) {
-                return response()->json(['response' => 'Frame successfully transfered']);
+                
+                if ($souscription) {
+                    $souscription->user_id = $request->receiver_id;
+                    $souscription->save();
+                $notification = Notification::create([
+                    'action' => 'transfer',
+                    'user_id' => $request->user_id,
+                    'contact_id' => $request->receiver_id,
+                    'post_id' => $post_id,
+                ]);
+                return response()->json([
+                    'message' => 'Frame successfully transfered',
+                    ''
+                ]);
             }
         } catch (\Throwable $th) {
             return response()->json(['error' => $th->getMessage(), 500]);

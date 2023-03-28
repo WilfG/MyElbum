@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,21 +31,23 @@ class TagsAPIController extends Controller
     {
         try {
 
-            $validator = Validator::make($request->only('frame_id', 'contact_id'), [
+            $validator = Validator::make($request->only('frame_id', 'contact_id', 'user_id'), [
                 'frame_id' => ['required', 'numeric'],
                 'contact_id' => ['required', 'numeric'],
+                'user_id' => ['required', 'numeric'],
             ]);
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+            $post_id = 'frame_'. $request->frame_id;
 
 
             $verify_tag = DB::table('tags')
                 ->where('tags.frame_id', '=', $request->frame_id)
                 ->where('tags.contact_id', '=', $request->contact_id)->first();
 
-              
+
             if ($verify_tag) {
                 return  response()->json(['error' => 'You already tag this contact']);
             }
@@ -52,10 +55,18 @@ class TagsAPIController extends Controller
             $input = $request->only('frame_id', 'contact_id');
             // var_dump($input);
             $tag = Tag::create($input);
-
+            $notification = Notification::create([
+                'action' => 'tag',
+                'user_id' => $request->user_id,
+                'contact_id' => $request->contact_id,
+                'post_id' => $post_id,
+            ]);
             $data = [
-                'tag' => $tag
-             ];
+                'tag' => $tag,
+                'notifications' => $notification,
+                'message' => 'Tag successfully created'
+
+            ];
             return response()->json($data, 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -103,11 +114,12 @@ class TagsAPIController extends Controller
         }
     }
 
-    public function usersTaggedOnFrame($id){
+    public function usersTaggedOnFrame($id)
+    {
         $users = DB::table('contacts')
-        ->join('tags', 'contacts.id', 'tags.contact_id')
-        ->where('tags.frame_id', '=', $id)
-        ->select('contacts.*')->get();
+            ->join('tags', 'contacts.id', 'tags.contact_id')
+            ->where('tags.frame_id', '=', $id)
+            ->select('contacts.*')->get();
 
         return response()->json(['users_tagged' => $users]);
     }

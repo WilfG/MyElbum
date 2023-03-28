@@ -78,16 +78,16 @@ class ReactionsAPIController extends Controller
 
             $input = $request->only('type', 'user_id', 'contact_id', 'frame_id', 'frame_content_id', 'comment_id', 'content_comment_id');
 
-            $reaction_verif = DB::table('reactions')
-                ->where('user_id', '=', $request->user_id)
-                ->where('type', '=', $request->type)
-                ->where('contact_id', '=', $request->contact_id)
-                ->where(function ($query) use ($request) {
-                    $query->orWhere('frame_id', $request->frame_id)
-                        ->orWhere('frame_content_id', $request->frame_content_id)
-                        ->orWhere('comment_id', $request->comment_id)
-                        ->orWhere('content_comment_id', $request->content_comment_id);
-                })->first();
+            // $reaction_verif = DB::table('reactions')
+            //     ->where('user_id', '=', $request->user_id)
+            //     ->where('type', '=', $request->type)
+            //     ->where('contact_id', '=', $request->contact_id)
+            //     ->where(function ($query) use ($request) {
+            //         $query->orWhere('frame_id', $request->frame_id)
+            //             ->orWhere('frame_content_id', $request->frame_content_id)
+            //             ->orWhere('comment_id', $request->comment_id)
+            //             ->orWhere('content_comment_id', $request->content_comment_id);
+            //     })->first();
             if ($request->type == 'like') {
                 if (isset($request->frame_id)) {
                     $reaction = Reaction::where('type', $request->type)

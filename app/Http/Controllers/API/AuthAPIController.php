@@ -94,12 +94,15 @@ class AuthAPIController extends Controller
                     $friend_requests = DB::table('user_contacts')
                         ->where('user_contacts.user_id', '=', $user->id)
                         ->where('user_contacts.request_status', '=', 'Pending')->get();
+
+                    $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                     $data =  [
                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'user' => $user,
                         'plan' => $plan,
                         'frames' => $frames,
                         'friend_requests' => $friend_requests,
+                        'notifications' => $notifications,
                         'status' => Auth::check(),
                         'message' => 'you are successfully logged in'
                     ];
@@ -117,9 +120,30 @@ class AuthAPIController extends Controller
                     // die;
                     $user = $request->user();
                     Auth::login($user);
+
+                    $plan = DB::table('souscriptions')
+                    ->join('plans', 'souscriptions.plan_id', 'plans.id')
+                    ->where('souscriptions.user_id', $user->id)
+                    ->select('plans.*')
+                    ->get();
+                    // var_dump($plan->id); die;
+                    $frames = DB::table('frames')
+                        ->join('souscriptions', 'frames.plan_id', 'souscriptions.plan_id')
+                        ->where('souscriptions.user_id', '=', $user->id)
+                        ->select('frames.*')->get();
+
+                    $friend_requests = DB::table('user_contacts')
+                        ->where('user_contacts.user_id', '=', $user->id)
+                        ->where('user_contacts.request_status', '=', 'Pending')->get();
+
+                    $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                     $data =  [
                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'user' => $user,
+                        'plan' => $plan,
+                        'frames' => $frames,
+                        'friend_requests' => $friend_requests,
+                        'notifications' => $notifications,
                         'status' => Auth::check(),
                         'message' => 'you are successfully logged in'
                     ];

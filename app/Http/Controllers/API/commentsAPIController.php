@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -30,22 +31,31 @@ class CommentsAPIController extends Controller
     {
         try {
 
-            $validator = Validator::make($request->only('frame_id', 'contact_id', 'comment_description'), [
+            $validator = Validator::make($request->only('frame_id', 'contact_id', 'comment_description', 'user_id'), [
                 'frame_id' => ['required', 'numeric'],
                 'contact_id' => ['required', 'numeric'],
                 'comment_description' => ['required', 'string'],
+                'user_id' => ['required', 'numeric'],
+
             ]);
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
-
+            $post_id = 'frame_'. $request->frame_id;
             $input = $request->only('frame_id', 'contact_id', 'comment_description');
             // var_dump($input);
             $comment = Comment::create($input);
+            $notification = Notification::create([
+                'action' => 'comment',
+                'user_id' => $request->user_id,
+                'contact_id' => $request->contact_id,
+                'post_id' => $post_id,
+            ]);
 
             $data = [
                 'comment' => $comment,
+                'notification' => $notification,
                 'message' => 'Comment successfully created'
             ];
             return response()->json($data, 200);
