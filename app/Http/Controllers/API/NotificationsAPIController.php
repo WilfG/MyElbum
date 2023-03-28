@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class NotificationsAPIController extends Controller
 {
@@ -55,9 +57,30 @@ class NotificationsAPIController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Notification $notification)
     {
-        //
+        try {
+            //code...
+            $validator = Validator::make($request->only('status'), [
+                'status' => ['string'],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+            $notification->update([
+                'status' => $request->status,
+            ]);
+
+            return response()->json([
+                'notification' => $notification,
+                'message' => 'Notification successfully viewed'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
     }
 
     /**
