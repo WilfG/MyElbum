@@ -87,7 +87,7 @@ class FramesAPIController extends Controller
     {
         $frame = Frame::find($id);
         if ($frame) {
-            return response()->json(['Frame', $frame]);
+            return response()->json(['Frame' => $frame]);
         } else {
             return response()->json(['message' => 'Frame not found']);
         }
