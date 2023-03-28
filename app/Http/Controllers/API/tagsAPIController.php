@@ -40,17 +40,13 @@ class TagsAPIController extends Controller
             }
 
 
-            $frame = DB::table('frames')->where('frames.id', '=', $request->frame_id)->first();
-            $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
-            $user = DB::table('users')->where('users.id', '=', $plan->user_id)->first();
-            $contact = DB::table('contacts')->where('id', '=', $request->contact_id)->first();
-
             $verify_tag = DB::table('tags')
                 ->where('tags.frame_id', '=', $request->frame_id)
                 ->where('tags.contact_id', '=', $request->contact_id)->first();
 
+              
             if ($verify_tag) {
-                return  response()->json(['error' => 'You are already tag this contact']);
+                return  response()->json(['error' => 'You already tag this contact']);
             }
 
             $input = $request->only('frame_id', 'contact_id');
@@ -58,9 +54,8 @@ class TagsAPIController extends Controller
             $tag = Tag::create($input);
 
             $data = [
-                'tag' => $tag,
-                'message' => $user->firstname. ' '. $user->lastname .' Tags '. $contact->contact_firstname . ' ' . $contact->contact_lastname .' on a frame',
-            ];
+                'tag' => $tag
+             ];
             return response()->json($data, 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -106,5 +101,14 @@ class TagsAPIController extends Controller
         } else {
             return response()->json(['message' => 'Contact not found on tags']);
         }
+    }
+
+    public function usersTaggedOnFrame($id){
+        $users = DB::table('contacts')
+        ->join('tags', 'contacts.id', 'tags.contact_id')
+        ->where('tags.frame_id', '=', $id)
+        ->select('contacts.*')->get();
+
+        return response()->json(['users_tagged' => $users]);
     }
 }

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Twilio\Rest\Client;
+use Stevebauman\Location\Facades\Location;
+
 
 class AuthAPIController extends Controller
 {
@@ -68,6 +70,11 @@ class AuthAPIController extends Controller
                 ]);
                 if ($validator->fails())
                     return response()->json($validator->errors(), 400);
+
+                        
+                    if ($position = Location::get()) {
+                        var_dump($position->countryName);die;
+                    }
 
                 if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                     // die;

@@ -27,7 +27,7 @@ Route::get('test', function(){
     Artisan::call('migrate:fresh');
 });
 
-Route::view('/', 'auth.login')->name('login')->middleware('guest');
+Route::view('admin', 'auth.login')->name('login')->middleware('guest');
 Route::view('login', 'auth.login')->name('login')->middleware('guest');
 
 Route::view('register', 'auth.register')->name('register')->middleware('guest');
