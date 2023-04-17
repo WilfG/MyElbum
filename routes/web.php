@@ -23,7 +23,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('test', function(){
+Route::get('testos', function(){
     Artisan::call('migrate:fresh');
 });
 
