@@ -162,8 +162,8 @@ class ReactionsAPIController extends Controller
                     $reaction = Reaction::create($input);
                     $notification = Notification::create([
                         'action' => $request->type,
-                        'user_id' => $request->user_id,
-                        'contact_id' => $request->contact_id,
+                        'user_id' => $request->contact_id,
+                        'contact_id' => $request->user_id,
                         'post_id' => $post_id,
                     ]);
                 }

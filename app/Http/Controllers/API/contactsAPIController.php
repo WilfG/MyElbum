@@ -35,9 +35,25 @@ class ContactsAPIController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show()
     {
-        //
+        // $MyElbumContacts = DB::table('contacts')->get();
+        $MyElbumContacts = DB::table('users')
+        ->select('users.id','users.firstname','users.lastname','users.email','users.phonenumber')->get();
+        if ($MyElbumContacts) {
+            
+            $data = $MyElbumContacts;
+               
+            return response()->json(['MyElbumContacts' => $data, ], 200);
+            
+        } else {
+            return response()->json(['message' => 'No contacts on MelBum Yet']);
+        }
+        
+        // $phoneNumbers = explode(',', $request->input('phoneNumbers'));
+        // $users = DB::table('users')->whereIn('phoneNumber', $phoneNumbers)->get();
+        // return response()->json($users);
+        
     }
 
     public function userContacts($id)
@@ -49,6 +65,7 @@ class ContactsAPIController extends Controller
 
         if ($userContacts) {
             return response()->json(['userContacts' => $userContacts]);
+            
         } else {
             return response()->json(['message' => 'Contacts not found']);
         }

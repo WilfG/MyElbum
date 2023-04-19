@@ -145,7 +145,7 @@ class FrameContentsAPIController extends Controller
                     return response()->json($data, 200);
 
                     video_limit:
-                    return response()->json(['error' => 'you can not upload more video than your limit']);
+                    return response()->json(['error' => 'youn can not upload more video than your limit']);
                 } else {
                     return response()->json(['error' => 'You can not upload more files than your storage capacity']);
                 }
