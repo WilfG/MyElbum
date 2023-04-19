@@ -50,6 +50,10 @@ Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
 Route::post('logout', [AuthAPIController::class, 'logout']);
 Route::get('user_frame/{id}', [FramesAPIController::class, 'userFrame']);
 Route::get('user_contacts/{id}', [ContactsAPIController::class, 'userContacts']);
+Route::get('myelbumcontacts/', [ContactsAPIController::class, 'show']);
+Route::post('tagusertoframe/', [TagsAPIController::class, 'store']);
+
+// Route::post('/registered-users', [ContactsAPIController::class, 'show']);
 Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
 Route::post('frame_contents/updateframecontent/{id}', [FrameContentsAPIController::class, 'updateFrameContent']);
 Route::post('frame_transfert_verif', [FramesAPIController::class, 'frame_transfert_verif']);
@@ -63,6 +67,7 @@ Route::get('reactionByFrameContent/{id}', [ReactionsAPIController::class, 'react
 Route::get('reactionBycomment/{id}', [ReactionsAPIController::class, 'reactionBycomment']);
 Route::get('reactionByFrameContentComment/{id}', [ReactionsAPIController::class, 'reactionByFrameContentComment']);
 Route::get('friend_requests/{user_id}', [UserContactAPIController::class, 'friend_requests']);
+Route::get('my_friend_requests/{user_id}', [UserContactAPIController::class, 'my_friend_requests']);
 Route::post('add_thumbnail_to_frame', [FramesAPIController::class, 'add_thumbnail_to_frame']);
 Route::get('usersTaggedOnFrame/{id}', [TagsAPIController::class, 'usersTaggedOnFrame']);
 Route::get('userNotifications/{id}', [NotificationsAPIController::class, 'userNotifications']);

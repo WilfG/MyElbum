@@ -167,7 +167,7 @@ class PlansAPIController extends Controller
     {
         $plan = Plan::find($id);
         if ($plan) {
-            return response()->json(['plan', $plan]);
+            return response()->json(['plan' => $plan]);
         } else {
             return response()->json(['message' => 'Plan not found']);
         }

@@ -27,8 +27,17 @@ Route::get('/', function () {
 Route::get('test', function () {
     Artisan::call('migrate:fresh');
 });
+Route::get('migrate', function(){
+     Artisan::call('migrate:fresh');
+    return 'Database Migration Completed';
+});
+Route::get('clear', function(){
+    // Artisan::call('migrate:fresh');
+    Artisan::call('cache:clear');
+    return 'Application cache has been cleared';
+});
 
-Route::view('admin', 'auth.login')->name('login')->middleware('guest');
+Route::view('/', 'auth.login')->name('login')->middleware('guest');
 Route::view('login', 'auth.login')->name('login')->middleware('guest');
 
 Route::view('register', 'auth.register')->name('register')->middleware('guest');

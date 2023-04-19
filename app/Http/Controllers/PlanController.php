@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
-use App\Models\Souscription;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PlanController extends Controller
@@ -18,13 +16,7 @@ class PlanController extends Controller
     public function index()
     {
         $plans = Plan::all();
-        $souscriptions = [];
-        foreach ($plans as $key => $plan) {
-            $souscriptions[$plan->id] = DB::table('souscriptions')->where('plan_id', '=', $plan->id)->count();
-            // $plan-
-        }
-       
-        return view('admin.plans.list', ['plans' => $plans, 'souscriptions' => $souscriptions]);
+        return view('admin.plans.list', ['plans' => $plans]);
     }
 
     /**
@@ -59,7 +51,7 @@ class PlanController extends Controller
             if ($validator->fails()) {
                 return redirect()->route('plans.create')->with('errors', $validator->errors());
             }
-
+            
             $plan = Plan::create([
                 'plan_title' => $request->plan_title,
                 'plan_type' => $request->plan_type,

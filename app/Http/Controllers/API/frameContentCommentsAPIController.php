@@ -33,11 +33,17 @@ class FrameContentCommentsAPIController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+            $post_id = 'frameContent_'. $request->frame_content_id;
 
             $input = $request->only('frame_content_id', 'contact_id', 'content_comment');
             // var_dump($input);
             $comment = FrameContentComment::create($input);
-
+                $notification = Notification::create([
+                'action' => 'comment',
+                'user_id' => $request->contact_id,
+                'contact_id' => $request->user_id,
+                'post_id' => $post_id,
+            ]);
             $data = [
                 'comment' => $comment,
                 'message' => 'Content comment successfully created'
