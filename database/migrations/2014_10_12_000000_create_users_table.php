@@ -25,9 +25,12 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->string('phoneNumber')->unique()->nullable();
             $table->boolean('isVerified')->default(false);
+            $table->boolean('otpVerified')->default(false);
             $table->string('google_id')->nullable();
             $table->string('profil_picture')->nullable();
             $table->enum('role', ['user','admin','super_admin'])->default('user');
+            $table->decimal('latitude')->nullable();
+            $table->decimal('longitude')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

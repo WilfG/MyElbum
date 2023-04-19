@@ -7,9 +7,12 @@ use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Nette\Utils\Random;
 
 class SocialiteController extends Controller
 {
@@ -33,6 +36,22 @@ class SocialiteController extends Controller
             $user->email = $request->email;
             $user->google_id = $request->google_id;
             $user->save();
+
+            $verification_code = Random::generate(30);
+            DB::table('user_verifications')->insert(['user_id' => $user->id, 'token' => $verification_code]);
+
+            $subject = 'Please verify your email';
+            $name = $user->firstname . ' ' . $user->lastname;
+            $email = $user->email;
+            Mail::send(
+                'email.verify',
+                ['name' => $name, 'verification_code' => $verification_code],
+                function ($mail) use ($email, $name, $subject) {
+                    $mail->from(getenv('MAIL_FROM_ADDRESS'), "MyElbum");
+                    $mail->to($email, $name);
+                    $mail->subject($subject);
+                }
+            );
 
             $contact = Contact::firstOrNew(['id' => $user->id]);
             $contact->contact_firstname = $user->firstname;

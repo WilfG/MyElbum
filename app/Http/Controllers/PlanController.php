@@ -63,15 +63,15 @@ class PlanController extends Controller
             $plan = Plan::create([
                 'plan_title' => $request->plan_title,
                 'plan_type' => $request->plan_type,
-                'storage_capacity' => $request->capacity_storage,
+                'storage_capacity' => $request->storage_capacity,
                 'duration_time' => $request->duration_time,
                 'price' => $request->price,
             ]);
             if ($plan) {
-                return redirect()->route('plans.create')->with('success', 'Plan successfully created');
+                return redirect()->route('plans.create')->with('status', 'Plan successfully created');
             }
         } catch (\Throwable $th) {
-            return redirect()->route('plans.create')->with('errors', $th->getMessage());
+            return redirect()->route('plans.create')->with('status', $th->getMessage());
         }
     }
 
@@ -118,7 +118,7 @@ class PlanController extends Controller
         $plan->price = $request->price;
         $plan->save();
 
-        return redirect()->route('plans.edit', $plan->id)->with('success', 'Plan successfully updated');
+        return redirect()->back()->with('status', 'Plan successfully updated');
     }
 
     /**

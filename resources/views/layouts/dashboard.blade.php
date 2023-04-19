@@ -89,6 +89,77 @@
     <script src="{{ asset('/bower_components/admin-lte/dist/js/pages/dashboard2.js') }}"></script>
     <!-- AdminLTE App -->
     <script src="{{ asset('/bower_components/admin-lte/dist/js/adminlte.js') }}"></script>
+
+    <script type="text/javascript">
+        $('#country').on('change', function() {
+            $value = $(this).val();
+            $.ajax({
+                type: 'get',
+                url: "{{URL::to('results-stats-country')}}",
+                data: {
+                    'value': $value
+                },
+                success: function(data) {
+                    $('#results-stats-country').html(data);
+                },
+                error: function(err) {
+                    console.log(err)
+                }
+            });
+        })
+
+
+        $('#region').on('change', function() {
+            $value = $(this).val();
+            $.ajax({
+                type: 'get',
+                url: "{{URL::to('results-stats-region')}}",
+                data: {
+                    'value': $value
+                },
+                success: function(data) {
+                    $('#results-stats-region').html(data);
+                },
+                error: function(err) {
+                    console.log(err)
+                }
+            });
+        })
+        $('.period_form').on('submit', function(e) {
+            e.preventDefault();
+            values = $(this).serializeArray();
+            // console.log(values)
+            start_period = values[1].value;
+            end_period = values[2].value;
+            if (start_period != '' && end_period != '') {
+
+                $.ajax({
+                    type: 'get',
+                    url: "{{URL::to('results-stats-period')}}",
+                    data: {
+
+                        'start_period': start_period,
+                        'end_period': end_period,
+                    },
+                    success: function(data) {
+                        $('#results-stats-period').html(data);
+                    },
+                    error: function(err) {
+                        console.log(err)
+                    }
+                });
+            } else {
+                alert('Fill all the fields.')
+            }
+        })
+    </script>
+    <script type="text/javascript">
+        $.ajaxSetup({
+            headers: {
+                'csrftoken': '{{ csrf_token() }}'
+            }
+        });
+    </script>
 </body>
 
 </html>

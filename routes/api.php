@@ -14,6 +14,7 @@ use App\Http\Controllers\API\TagsAPIController;
 use App\Http\Controllers\API\UserContactAPIController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\API\VerificationController;
+use App\Http\Controllers\DashboardController;
 use App\Models\Comment;
 use App\Models\FrameContentComment;
 use Illuminate\Http\Client\Request;
@@ -46,7 +47,7 @@ Route::resources([
 ]);
 
 Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
-Route::get('logout', [AuthAPIController::class, 'logout']);
+Route::post('logout', [AuthAPIController::class, 'logout']);
 Route::get('user_frame/{id}', [FramesAPIController::class, 'userFrame']);
 Route::get('user_contacts/{id}', [ContactsAPIController::class, 'userContacts']);
 Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
@@ -77,20 +78,26 @@ Route::controller(AuthAPIController::class)->group(function () {
     Route::post('register', 'register'); // done but email verify not yet ready
     Route::post('login', 'login');
     Route::post('validatePhoneNumber', 'validatePhoneNumber');
+    Route::post('validateOTP', 'validateOTP');
     Route::post('updateUser/{user}', 'updateUser');
+    Route::get('user/verify/{verification_code}', 'verifyUser');
 });
+Route::get('email-verified', function(){
+    return view('email.email-verified');
+})->name('email-verified');
+Route::get('email-not-verified', function(){
+    return view('email.email-not-verified');
+})->name('email-not-verified');
+// Route::get('/email/verify', function () {
+//     return view('auth.verify-email');
+// })->middleware('auth')->name('verification.notice');
 
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
 
- 
-Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
-Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
+// Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
+// Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
 
 /**
  * Google Sign up and automatically sign in
  */
 Route::post('/signup-socialite', [SocialiteController::class, 'googleSignup']);
 Route::post('/signin-socialite', [SocialiteController::class, 'googleSignin']);
-

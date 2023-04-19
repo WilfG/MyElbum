@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\AuthAPIController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\PlanController;
@@ -23,7 +24,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('test', function(){
+Route::get('test', function () {
     Artisan::call('migrate:fresh');
 });
 
@@ -32,28 +33,27 @@ Route::view('login', 'auth.login')->name('login')->middleware('guest');
 
 Route::view('register', 'auth.register')->name('register')->middleware('guest');
 
-Route::middleware('is_admin')->group(function(){
+Route::middleware('is_admin')->group(function () {
 
-    Route::get('dashboard/home', function(){
-        return view('admin_template', ['user' => Auth::user()]);
-    });
+    Route::get('dashboard/home', [DashboardController::class, 'index']);
     Route::resource('plans', PlanController::class);
+    Route::get('results-stats-country', [DashboardController::class, 'results_stats_country']);
+    Route::get('results-stats-region', [DashboardController::class, 'results_stats_region']);
+    Route::get('results-stats-period', [DashboardController::class, 'results_stats_period']);
 });
 
-// Route::get('/email/verify', function () {
-//     return view('auth.verify-email');
-// })->middleware('auth')->name('verification.notice');
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
 
- 
-// Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-//     $request->fulfill();
- 
-//     return redirect('/home');
-// })->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
 
 
 Route::get('dashboard', [DashboardController::class, 'index']);
 Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google-auth');
 Route::get('auth/google/call-back', [GoogleAuthController::class, 'callbackGoogle']);
-
-

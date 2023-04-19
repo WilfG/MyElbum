@@ -14,14 +14,9 @@
                          <h3 class="card-title">Edit Plan's price</h3>
                      </div>
                      <div class="card-body">
-                         @if ($errors->any())
-                         <div class="alert alert-danger">
-                             <strong>Whoops!</strong> There were some problems with your input.<br><br>
-                             <ul>
-                                 @foreach ($errors->all() as $error)
-                                 <li>{{ $error }}</li>
-                                 @endforeach
-                             </ul>
+                         @if (session('status'))
+                         <div class="mb-4 font-medium text-sm text-green-600 alert alert-success">
+                             {{ session('status') }}
                          </div>
                          @endif
                          <form action="{{ route('plans.update', $plan->id) }}" method="POST">

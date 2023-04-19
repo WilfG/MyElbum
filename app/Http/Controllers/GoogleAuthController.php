@@ -32,6 +32,7 @@ class GoogleAuthController extends Controller
                 return view('dashboard', ['user' => $new_user]);
             } else {
                 Auth::login($user);
+                
                 return redirect()->intended('dashboard');
             }
         } catch (\Throwable $th) {

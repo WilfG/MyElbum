@@ -5,11 +5,16 @@
 <section class="content">
     <div class="container-fluid">
         <div class="row">
+            <div class="col-lg-3 col-md-3">
+                <h1 class="card-title">Plans list</h1>
+            </div>
+            <div class="col-lg-6 col-md-6"></div>
+            <div class="col-lg-3 col-md-3">
+                <a href="{{ route('plans.create') }}" class="btn btn-success btn-sm pull-right"><i class="fa fa-plus"> Create a new plan</i></a>
+            </div>
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <a href="{{ route('plans.create') }}" class="btn btn-success btn-sm pull-right"><i class="fa fa-plus"> Create a new plan</i></a>
-                        <h1 class="card-title">Plans list</h1>
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
@@ -35,7 +40,7 @@
                                     <td>{{ $plan->storage_capacity }}</td>
                                     <td>{{ $plan->price }}</td>
                                     <td>{{ $souscriptions[$plan->id] }}</td>
-                                   
+
                                     <td>
                                         <a href="{{ route('plans.edit', $plan->id) }}"><i class="fa fa-pen"></i></a>
 

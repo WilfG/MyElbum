@@ -14,14 +14,9 @@
                          <h3 class="card-title">Edit Plan's price</h3>
                      </div>
                      <div class="card-body">
-                         @if ($errors)
-                         <div class="alert alert-danger">
-                             <strong>Whoops!</strong> There were some problems with your input.<br><br>
-                             <ul>
-                                 @foreach ($errors->all() as $error)
-                                 <li>{{ $error }}</li>
-                                 @endforeach
-                             </ul>
+                         @if (session('status'))
+                         <div class="mb-4 font-medium text-sm text-green-600 alert alert-success">
+                             {{ session('status') }}
                          </div>
                          @endif
                          <form action="{{ route('plans.store') }}" method="POST">
@@ -32,9 +27,9 @@
                              </select>
                              <br>
                              <label for="plan_type">Type</label>
-                             <select class="form-control" id="plan_type" name="plan_type" step="1" value="" required>
+                             <select class="form-control" id="plan_type" name="plan_type" step="1" required>
                                  <option value="Lite">Lite</option>
-                                 <option value="Premium">All Go</option>
+                                 <option value="All Go">All Go</option>
                              </select>
                              <br>
                              <label for="duration_time"> Duration time (Months)</label>
@@ -51,11 +46,10 @@
                                  <option value="12">12</option>
                                  <option value="24">24</option>
                                  <option value="48">48</option>
-                                 <option value="64">64</option>
                              </select>
                              <br>
                              <label for="price">Price ($)</label>
-                             <input class="form-control form-control-sm" name="price" step="0.01" required id="price" type="number" min="0" value="">
+                             <input class="form-control form-control-sm" name="price" step="0.01" required id="price" type="number" min="0">
                              <br>
                              <div class="pull-right">
                                  <input type="submit" class="btn btn-info " value="Create Plan">
