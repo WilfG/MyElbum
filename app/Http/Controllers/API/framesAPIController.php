@@ -131,7 +131,7 @@ class FramesAPIController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
-            $post_id = 'frame_'. $request->frame_id;
+            $post_id = 'frame_' . $request->frame_id;
 
             $frame = DB::table('frames')->where('frames.id', '=', $request->frame_id)->first();
             $plan = DB::table('plans')->where('plans.id', '=', $frame->plan_id)->first();
@@ -163,10 +163,10 @@ class FramesAPIController extends Controller
             // die('ok');
             $souscription = Souscription::where('souscriptions.user_id', $request->user_id)
                 ->where('souscriptions.plan_id', $plan->id)->first();
-                
-                if ($souscription) {
-                    $souscription->user_id = $request->receiver_id;
-                    $souscription->save();
+
+            if ($souscription) {
+                $souscription->user_id = $request->receiver_id;
+                $souscription->save();
                 $notification = Notification::create([
                     'action' => 'transfer',
                     'user_id' => $request->user_id,
@@ -200,6 +200,16 @@ class FramesAPIController extends Controller
             ->where('souscriptions.user_id', '=', $id)
             ->select('frames.*', 'frames.plan_id')->get();
 
+        foreach ($frames as $frame) {
+            $contents = DB::table('frame_contents')->where('frame_id', $frame->id)->get();
+            $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
+            $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
+            $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
+            $frame->contents = $contents;
+            $frame->comments = $comments;
+            $frame->tags = $tags;
+            $frame->reactions = $reactions;
+        }
         if ($frames) {
             return response()->json(['frames' => $frames]);
         } else {
