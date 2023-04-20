@@ -134,7 +134,7 @@ class AuthAPIController extends Controller
                         ->join('souscriptions', 'frames.plan_id', 'souscriptions.plan_id')
                         ->where('souscriptions.user_id', '=', $user->id)
                         ->select('frames.*')->get()->toArray();
-                    
+
                     foreach ($frames as $frame) {
                         $contents = DB::table('frame_contents')->where('frame_id', $frame->id)->get();
                         $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
@@ -144,6 +144,16 @@ class AuthAPIController extends Controller
                         $frame->comments = $comments;
                         $frame->tags = $tags;
                         $frame->reactions = $reactions;
+
+                        //
+                        foreach ($frame->contents as $content) {
+                            $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
+                            $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
+                            $content_reactions = DB::table('reactions')->where('frame_content_id', $content->id)->get();
+                            $content->content_comments = $content_comments;
+                            $content->content_tags = $content_tags;
+                            $content->content_reactions = $content_reactions;
+                        }
                     }
 
                     $friend_requests = DB::table('user_contacts')
@@ -189,7 +199,7 @@ class AuthAPIController extends Controller
                         'session_id' => $session_id,
                         'user_id' => $user->id,
                     ]);
-                    
+
                     $plan = DB::table('souscriptions')
                         ->join('plans', 'souscriptions.plan_id', 'plans.id')
                         ->where('souscriptions.user_id', $user->id)

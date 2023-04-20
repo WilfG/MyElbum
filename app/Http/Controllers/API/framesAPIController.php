@@ -201,7 +201,7 @@ class FramesAPIController extends Controller
             ->select('frames.*', 'frames.plan_id')->get();
 
         foreach ($frames as $frame) {
-            $contents = DB::table('frame_contents')->where('frame_id', $frame->id)->get();
+            $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
             $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
             $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
             $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
@@ -209,7 +209,16 @@ class FramesAPIController extends Controller
             $frame->comments = $comments;
             $frame->tags = $tags;
             $frame->reactions = $reactions;
+            foreach ($frame->contents as $content) {
+                $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
+                $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
+                $content_reactions = DB::table('reactions')->where('frame_content_id', $content->id)->get();
+                $content->content_comments = $content_comments;
+                $content->content_tags = $content_tags;
+                $content->content_reactions = $content_reactions;
+            }
         }
+       
         if ($frames) {
             return response()->json(['frames' => $frames]);
         } else {
