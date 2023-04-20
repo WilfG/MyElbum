@@ -57,8 +57,8 @@ class TagsAPIController extends Controller
             $tag = Tag::create($input);
             $notification = Notification::create([
                 'action' => 'tag',
-                'user_id' => $request->contact_id,
-                'contact_id' => $request->user_id,
+                'user_id' => $request->user_id,
+                'contact_id' => $request->contact_id,
                 'post_id' => $post_id,
             ]);
             $data = [

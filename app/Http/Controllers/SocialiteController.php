@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\User;
+use App\Models\User_session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -86,9 +88,53 @@ class SocialiteController extends Controller
             if ($user) {
 
                 Auth::login($user);
+
+                $session_id = Session::getId();
+                // User_session::create([
+                //     'region' => $request->region,
+                //     'country' => $request->country,
+                //     'session_id' => $session_id,
+                //     'user_id' => $user->id,
+                // ]);
+                $plan = DB::table('souscriptions')
+                    ->join('plans', 'souscriptions.plan_id', 'plans.id')
+                    ->where('souscriptions.user_id', $user->id)
+                    ->select('plans.*')
+                    ->get();
+                // var_dump($plan->id); die;
+                $frames = DB::table('frames')
+                    ->join('souscriptions', 'frames.plan_id', 'souscriptions.plan_id')
+                    ->where('souscriptions.user_id', '=', $user->id)
+                    ->select('frames.*')->get()->toArray();
+
+                foreach ($frames as $frame) {
+                    $contents = DB::table('frame_contents')->where('frame_id', $frame->id)->get();
+                    $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
+                    $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
+                    $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
+                    $frame->contents = $contents;
+                    $frame->comments = $comments;
+                    $frame->tags = $tags;
+                    $frame->reactions = $reactions;
+                }
+
+                $friend_requests = DB::table('user_contacts')
+                    ->where('user_contacts.user_id', '=', $user->id)
+                    ->where('user_contacts.request_status', '=', 'Pending')->get();
+
+                // $location  = GeoLocation::lookup('192.168.149.100');die;
+                // $latitude = $location->getLatitude();
+                // $longitude = $location->getLongitude();
+                // dd($latitude);
+                $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                 $data =  [
                     // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                    'session_id' => $session_id,
                     'user' => $user,
+                    'plan' => $plan,
+                    'frames' => $frames,
+                    'friend_requests' => $friend_requests,
+                    'notifications' => $notifications,
                     'status' => Auth::check(),
                     'message' => 'You are logged in',
                 ];

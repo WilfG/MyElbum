@@ -130,6 +130,7 @@ class ReactionsAPIController extends Controller
             }
 
             if ($request->type == 'view') {
+
                 if (isset($request->frame_id)) {
                     $reaction = Reaction::where('type', $request->type)
                         ->where('contact_id', $request->contact_id)
@@ -159,13 +160,17 @@ class ReactionsAPIController extends Controller
                 if ($reaction) {
                     return response()->json(['message' => 'Already viewed']);
                 } else {
-                    $reaction = Reaction::create($input);
-                    $notification = Notification::create([
-                        'action' => $request->type,
-                        'user_id' => $request->contact_id,
-                        'contact_id' => $request->user_id,
-                        'post_id' => $post_id,
-                    ]);
+                    // die($post_id);
+
+                    if ($reaction = Reaction::create($input)) {
+
+                        $notification = Notification::create([
+                            'action' => $request->type,
+                            'user_id' => $request->user_id,
+                            'contact_id' => $request->contact_id,
+                            'post_id' => $post_id,
+                        ]);
+                    }
                 }
             }
 

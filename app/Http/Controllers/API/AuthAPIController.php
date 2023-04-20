@@ -17,6 +17,7 @@ use Nette\Utils\Random;
 use Twilio\Rest\Client;
 // use Stevebauman\Location\Facades\Location;
 use Adrianorosa\GeoLocation\GeoLocation;
+use App\Models\FrameContent;
 use App\Models\User_session;
 
 class AuthAPIController extends Controller
@@ -132,7 +133,18 @@ class AuthAPIController extends Controller
                     $frames = DB::table('frames')
                         ->join('souscriptions', 'frames.plan_id', 'souscriptions.plan_id')
                         ->where('souscriptions.user_id', '=', $user->id)
-                        ->select('frames.*')->get();
+                        ->select('frames.*')->get()->toArray();
+                    
+                    foreach ($frames as $frame) {
+                        $contents = DB::table('frame_contents')->where('frame_id', $frame->id)->get();
+                        $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
+                        $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
+                        $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
+                        $frame->contents = $contents;
+                        $frame->comments = $comments;
+                        $frame->tags = $tags;
+                        $frame->reactions = $reactions;
+                    }
 
                     $friend_requests = DB::table('user_contacts')
                         ->where('user_contacts.user_id', '=', $user->id)

@@ -15,11 +15,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-<<<<<<< HEAD
-=======
-                        <a href="{{ route('plans.create') }}" class="btn btn-success btn-sm pull-right" ><i class="fa fa-plus"> Create a new plan</i></a>
+                        <!-- <a href="{{ route('plans.create') }}" class="btn btn-success btn-sm pull-right" ><i class="fa fa-plus"> Create a new plan</i></a> -->
                         <h3 class="card-title">Plans list</h3>
->>>>>>> 7de12c21bcadf3f328c0af0709155b81f7761105
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
@@ -31,6 +28,7 @@
                                     <th>Type</th>
                                     <th>Storage Capacity (contents)</th>
                                     <th>Price ($)</th>
+                                    <th>stats</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -43,11 +41,7 @@
                                     <td>{{ $plan->plan_type }}</td>
                                     <td>{{ $plan->storage_capacity }}</td>
                                     <td>{{ $plan->price }}</td>
-<<<<<<< HEAD
                                     <td>{{ $souscriptions[$plan->id] }}</td>
-
-=======
->>>>>>> 7de12c21bcadf3f328c0af0709155b81f7761105
                                     <td>
                                         <a href="{{ route('plans.edit', $plan->id) }}"><i class="fa fa-pen"></i></a>
 
@@ -62,6 +56,7 @@
                                     <th>Type</th>
                                     <th>Storage Capacity (contents)</th>
                                     <th>Price ($)</th>
+                                    <th>stats</th>
                                     <th>Actions</th>
                                 </tr>
                             </tfoot>
