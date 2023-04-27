@@ -19,13 +19,14 @@ use Twilio\Rest\Client;
 use Adrianorosa\GeoLocation\GeoLocation;
 use App\Models\FrameContent;
 use App\Models\User_session;
+use Carbon\Carbon;
 
 class AuthAPIController extends Controller
 {
     public function register(Request $request)
     {
         try {
-            $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'latitude', 'longitude', 'region'), [
+            $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'latitude', 'longitude', 'region', 'picture'), [
                 'lastname' => ['required', 'min:2', 'max:50', 'string'],
                 'firstname' => ['required', 'min:2', 'max:50', 'string'],
                 'country' => ['required', 'string'],
@@ -37,7 +38,10 @@ class AuthAPIController extends Controller
                 'latitude' => ['required', 'string',],
                 'longitude' => ['required', 'string',],
                 'region' => ['required', 'string',],
+                'picture' => 'nullable',
+                'picture' => 'file|mimes:jpeg,jpg,png,gif,PNG,JPG,JPEG',
             ]);
+
             if ($validator->fails())
                 return response()->json($validator->errors(), 400);
 
@@ -46,6 +50,17 @@ class AuthAPIController extends Controller
             $input['isVerified'] = 0;
             // var_dump($input); die;
             $user = User::create($input);
+
+            if ($request->hasFile('picture')) {
+                $ext = explode('.', $request->picture->getClientOriginalName())[1];
+                $filename  = $user->firstname . '_' . $user->lastname . '_avatar_' . date('Ymd') . '_' . time() . '.' . $ext;
+                $path = 'Users_pictures/' . $user->firstname . '_' . $user->lastname;
+
+                $request->picture->move(public_path($path), $filename);
+                User::where('id', $user->id)->update([
+                    'profil_picture' => $path . '/' . $filename
+                ]);
+            }
 
             $verification_code = Random::generate(30);
             DB::table('user_verifications')->insert(['user_id' => $user->id, 'token' => $verification_code]);
@@ -80,7 +95,7 @@ class AuthAPIController extends Controller
             ]);
 
             $data =  [
-                'token' => $user->createToken('Sanctumm+Socialite')->plainTextToken,
+                // 'token' => $user->createToken('Sanctumm+Socialite')->plainTextToken,
                 'user' => $user,
                 'status' => Auth::check(),
                 'message' => 'We send you a verification mail..'
@@ -314,13 +329,13 @@ class AuthAPIController extends Controller
             $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'picture'), [
                 'lastname' => ['required', 'min:2', 'max:50', 'string'],
                 'firstname' => ['required', 'min:2', 'max:50', 'string'],
-                'country' => ['required', 'string'],
-                'phoneNumber' => ['required', 'min:8', 'max:15', 'string'],
-                'birthDate' => ['required', 'string'],
-                'username' => ['required', 'min:2', 'max:50', 'string'],
+                'country' => ['nullable', 'string'],
+                'phoneNumber' => ['nullable', 'min:8', 'max:15', 'string'],
+                'birthDate' => ['nullable', 'string'],
+                'username' => ['nullable', 'min:2', 'max:50', 'string'],
                 'email' => ['required', 'email',],
-                'password' => ['required', 'min:6', 'max:255', 'string'],
-                'picture' => 'required',
+                'password' => ['nullable', 'min:6', 'max:255', 'string'],
+                'picture' => 'nullable',
                 'picture' => 'file|mimes:jpeg,jpg,png,gif,PNG,JPG,JPEG',
             ]);
             if ($validator->fails())
@@ -330,6 +345,9 @@ class AuthAPIController extends Controller
             $input['password'] = Hash::make($request['password']);
 
             if ($request->hasfile('picture')) {
+                if (!is_null($user->profil_picture)) {
+                    unlink(public_path($user->profil_picture));
+                }
                 $ext = explode('.', $request->picture->getClientOriginalName())[1];
                 $filename  = $user->firstname . '_' . $user->lastname . '_avatar_' . date('Ymd') . '_' . time() . '.' . $ext;
                 $path = 'Users_pictures/' . $user->firstname . '_' . $user->lastname;

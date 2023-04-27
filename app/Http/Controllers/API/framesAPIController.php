@@ -209,6 +209,7 @@ class FramesAPIController extends Controller
             $frame->comments = $comments;
             $frame->tags = $tags;
             $frame->reactions = $reactions;
+            
             foreach ($frame->contents as $content) {
                 $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
                 $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
