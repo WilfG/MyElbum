@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Hash;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,10 +38,13 @@ Route::get('/', function () {
 //     return 'Application cache has been cleared';
 // });
 
-Route::view('/', 'auth.login')->name('login')->middleware('guest');
-Route::view('login', 'auth.login')->name('login')->middleware('guest');
+// Route::view('/', 'auth.login')->name('login')->middleware('guest');
+Route::view('login', 'auth.login')->name('connexion')->middleware('signed');
+Route::get('signature', [DashboardController::class, 'generate_signature']);
 
-Route::view('register', 'auth.register')->name('register')->middleware('guest');
+Route::view('register', 'auth.register')->name('inscrire')->middleware('guest');
+Route::get('signature-signup', [DashboardController::class, 'generate_signature_signup']);
+
 
 Route::middleware('is_admin')->group(function () {
 

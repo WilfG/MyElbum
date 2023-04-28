@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+// use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements MustVerifyEmail, JWTSubject
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -41,19 +41,19 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
      *
      * @return mixed
      */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
+    // public function getJWTIdentifier()
+    // {
+    //     return $this->getKey();
+    // }
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      *
      * @return array
      */
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
+    // public function getJWTCustomClaims()
+    // {
+    //     return [];
+    // }
     // protected $guarded = ['id'];
 
     /**
@@ -77,5 +77,9 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 
     public function souscriptions(){
         return $this->hasMany(Souscription::class);
+    }
+
+    public function user_verification(){
+        $this->hasOne(User_verification::class);
     }
 }

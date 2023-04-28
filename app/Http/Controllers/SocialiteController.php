@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccessToken;
 use App\Models\Contact;
 use App\Models\User;
 use App\Models\User_session;
@@ -15,6 +16,8 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Nette\Utils\Random;
+use Illuminate\Support\Str;
+
 
 class SocialiteController extends Controller
 {
@@ -61,8 +64,15 @@ class SocialiteController extends Controller
             $contact->save();
 
             Auth::login($user);
+
+            $accessToken = AccessToken::updateOrCreate(
+                ['user_id' => $user->id],
+                ['access_token' => Str::random(191)]
+            );
+
             $data =  [
-                'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                'token' => $accessToken,
                 'user' => $user,
                 'status' => Auth::check(),
                 'message' => 'Your account is successfully created and you are logged in',
@@ -88,6 +98,11 @@ class SocialiteController extends Controller
             if ($user) {
 
                 Auth::login($user);
+
+                $accessToken = AccessToken::updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['access_token' => Str::random(191)]
+                );
 
                 $session_id = Session::getId();
                 // User_session::create([
@@ -128,7 +143,7 @@ class SocialiteController extends Controller
                 // dd($latitude);
                 $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                 $data =  [
-                    // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                    'token' => $accessToken,
                     'session_id' => $session_id,
                     'user' => $user,
                     'plan' => $plan,

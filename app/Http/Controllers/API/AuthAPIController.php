@@ -17,9 +17,12 @@ use Nette\Utils\Random;
 use Twilio\Rest\Client;
 // use Stevebauman\Location\Facades\Location;
 use Adrianorosa\GeoLocation\GeoLocation;
+use App\Models\AccessToken;
 use App\Models\FrameContent;
 use App\Models\User_session;
+use App\Models\User_verification;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AuthAPIController extends Controller
 {
@@ -62,7 +65,7 @@ class AuthAPIController extends Controller
                 ]);
             }
 
-            $verification_code = Random::generate(30);
+            $verification_code = random_int(100000, 999999);
             DB::table('user_verifications')->insert(['user_id' => $user->id, 'token' => $verification_code]);
 
             $subject = 'Please verify your email';
@@ -94,8 +97,13 @@ class AuthAPIController extends Controller
                 'user_id' => $user->id,
             ]);
 
+            $accessToken = AccessToken::updateOrCreate(
+                ['user_id' => $user->id],
+                ['access_token' => Str::random(191)]
+            );
             $data =  [
-                // 'token' => $user->createToken('Sanctumm+Socialite')->plainTextToken,
+                // 'token' => $user->createToken('Sanctum+Socialite')->plainTextToken,
+                'token' => $accessToken,
                 'user' => $user,
                 'status' => Auth::check(),
                 'message' => 'We send you a verification mail..'
@@ -139,6 +147,12 @@ class AuthAPIController extends Controller
                         'session_id' => $session_id,
                         'user_id' => $user->id,
                     ]);
+
+                    $accessToken = AccessToken::updateOrCreate(
+                        ['user_id' => $user->id],
+                        ['access_token' => Str::random(191)]
+                    );
+
                     $plan = DB::table('souscriptions')
                         ->join('plans', 'souscriptions.plan_id', 'plans.id')
                         ->where('souscriptions.user_id', $user->id)
@@ -181,7 +195,8 @@ class AuthAPIController extends Controller
                     // dd($latitude);
                     $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                     $data =  [
-                        'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                        // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                        'token' => $accessToken,
                         'session_id' => $session_id,
                         'user' => $user,
                         'plan' => $plan,
@@ -253,21 +268,31 @@ class AuthAPIController extends Controller
 
     public function logout(Request $request)
     {
-        $validator = Validator::make($request->only('user_id', 'session_id'), [
-            'user_id' => ['required', 'string'],
-            'session_id' => ['required', 'min:6', 'max:255', 'string'],
-        ]);
-        if ($validator->fails())
-            return response()->json($validator->errors(), 400);
+        try {
+            $validator = Validator::make($request->only('user_id', 'session_id', 'access_token'), [
+                'user_id' => ['required', 'string'],
+                'session_id' => ['required', 'min:6', 'max:255', 'string'],
+                'access_token' => ['required', 'string'],
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 400);
 
-        $session_id = $request->session_id;
-        $user_id = $request->user_id;
-        $user = User_session::where('user_id', $user_id)->where('session_id', $session_id)->first();
-        $user->expired = true;
-        $user->save();
-        Session::flush();
-        Auth::logout();
-        return response()->json(['status' => Auth::check()]);
+            $accessToken = AccessToken::where('access_token', $request->access_token)->first();
+            if ($accessToken) {
+                $accessToken->delete();
+            }
+
+            $session_id = $request->session_id;
+            $user_id = $request->user_id;
+            $user = User_session::where('user_id', $user_id)->where('session_id', $session_id)->first();
+            $user->expired = true;
+            $user->save();
+            Session::flush();
+            Auth::logout();
+            return response()->json(['status' => Auth::check()]);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => 'An error occurs...']);
+        }
     }
 
     protected function validatePhoneNumber(Request $request)
@@ -389,9 +414,60 @@ class AuthAPIController extends Controller
             $user->update(['isVerified' => 1]);
             DB::table('user_verifications')->where('token', $verification_code)->delete();
 
-            return redirect()->route('email-verified')->with('status', 'You have successfully verified your email address.');
+            return response()->json(['status' => 'You have successfully verified your email address.']);
         }
 
-        return redirect()->route('email-not-verified')->with('status', 'Email address not yet verified.');
+        return response()->json(['status' => 'Email address not yet verified.']);
+    }
+
+    /**
+     * Resend verification mail
+     */
+
+    public function resendVerification(User $user)
+    {
+        if ($user->isVerified) {
+            response()->json(['status' => 'Your account email is already verified']);
+        }
+
+        $verification_code = random_int(100000, 999999);
+        DB::table('user_verifications')->insert(['user_id' => $user->id, 'token' => $verification_code]);
+
+        $subject = 'Please verify your email';
+        $name = $user->firstname . ' ' . $user->lastname;
+        $email = $user->email;
+        Mail::send(
+            'email.verify',
+            ['name' => $name, 'verification_code' => $verification_code],
+            function ($mail) use ($email, $name, $subject) {
+                $mail->from(getenv('MAIL_FROM_ADDRESS'), "MyElbum");
+                $mail->to($email, $name);
+                $mail->subject($subject);
+            }
+        );
+
+        $data =  [
+            // 'token' => $user->createToken('Sanctumm+Socialite')->plainTextToken,
+            'user' => $user,
+            'message' => 'We send you a verification mail..'
+        ];
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Empty verification table for expiration
+     */
+
+    public function empty_verification()
+    {
+        $tokens = User_verification::all();
+
+        foreach ($tokens as  $token) {
+            $creation = Carbon::create($token->created_at);
+            if (Carbon::now()->gt($creation->addMinutes(5))) {
+                $token->delete();
+            }
+        }
+        return 'oui';
     }
 }

@@ -32,77 +32,74 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::resources([
-    'plans' => PlansAPIController::class,
-    'frames' => FramesAPIController::class,
-    'frame_contents' => frameContentsAPIController::class,
-    'users_contacts' => UserContactAPIController::class,
-    'comments' => CommentsAPIController::class,
-    'tags' => TagsAPIController::class,
-    'content_comments' => FrameContentCommentsAPIController::class,
-    'content_tags' => FrameContentTagsAPIController::class,
-    'contacts' => ContactsAPIController::class,
-    'reactions' => ReactionsAPIController::class,
-    'notifications' => NotificationsAPIController::class,
-]);
+Route::group(['middleware' => 'auth.api'], function () {
 
-Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
-Route::post('logout', [AuthAPIController::class, 'logout']);
-Route::get('user_frame/{id}', [FramesAPIController::class, 'userFrame']);
-Route::get('user_contacts/{id}', [ContactsAPIController::class, 'userContacts']);
-Route::get('myelbumcontacts/', [ContactsAPIController::class, 'show']);
-Route::post('tagusertoframe/', [TagsAPIController::class, 'store']);
+    Route::resources([
+        'plans' => PlansAPIController::class,
+        'frames' => FramesAPIController::class,
+        'frame_contents' => frameContentsAPIController::class,
+        'users_contacts' => UserContactAPIController::class,
+        'comments' => CommentsAPIController::class,
+        'tags' => TagsAPIController::class,
+        'content_comments' => FrameContentCommentsAPIController::class,
+        'content_tags' => FrameContentTagsAPIController::class,
+        'contacts' => ContactsAPIController::class,
+        'reactions' => ReactionsAPIController::class,
+        'notifications' => NotificationsAPIController::class,
+    ]);
 
-// Route::post('/registered-users', [ContactsAPIController::class, 'show']);
-Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
-Route::post('frame_contents/updateframecontent/{id}', [FrameContentsAPIController::class, 'updateFrameContent']);
-Route::post('frame_transfert_verif', [FramesAPIController::class, 'frame_transfert_verif']);
-Route::post('transfer_frame', [FramesAPIController::class, 'transfer_frame']);
-Route::post('frame_reset', [FramesAPIController::class, 'frame_reset']);
-Route::delete('restore_frame/{id}', [FrameContentsAPIController::class, 'restore_frame']);
-Route::get('frameComments/{id}', [CommentsAPIController::class, 'frameComments']);
-Route::get('frameContentComments/{id}', [FrameContentCommentsAPIController::class, 'frameContentComments']);
-Route::get('reactionByFrame/{id}', [ReactionsAPIController::class, 'reactionByFrame']);
-Route::get('reactionByFrameContent/{id}', [ReactionsAPIController::class, 'reactionByFrameContent']);
-Route::get('reactionBycomment/{id}', [ReactionsAPIController::class, 'reactionBycomment']);
-Route::get('reactionByFrameContentComment/{id}', [ReactionsAPIController::class, 'reactionByFrameContentComment']);
-Route::get('friend_requests/{user_id}', [UserContactAPIController::class, 'friend_requests']);
-Route::get('my_friend_requests/{user_id}', [UserContactAPIController::class, 'my_friend_requests']);
-Route::post('add_thumbnail_to_frame', [FramesAPIController::class, 'add_thumbnail_to_frame']);
-Route::get('usersTaggedOnFrame/{id}', [TagsAPIController::class, 'usersTaggedOnFrame']);
-Route::get('userNotifications/{id}', [NotificationsAPIController::class, 'userNotifications']);
+    Route::get('plans/user_plan/{id}', [PlansAPIController::class, 'user_plan']);
+    Route::post('logout', [AuthAPIController::class, 'logout']);
+    Route::get('user_frame/{id}', [FramesAPIController::class, 'userFrame']);
+    Route::get('user_contacts/{id}', [ContactsAPIController::class, 'userContacts']);
+    Route::get('myelbumcontacts/', [ContactsAPIController::class, 'show']);
+    Route::post('tagusertoframe/', [TagsAPIController::class, 'store']);
+
+    // Route::post('/registered-users', [ContactsAPIController::class, 'show']);
+    Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
+    Route::post('frame_contents/updateframecontent/{id}', [FrameContentsAPIController::class, 'updateFrameContent']);
+    Route::post('frame_transfert_verif', [FramesAPIController::class, 'frame_transfert_verif']);
+    Route::post('transfer_frame', [FramesAPIController::class, 'transfer_frame']);
+    Route::post('frame_reset', [FramesAPIController::class, 'frame_reset']);
+    Route::delete('restore_frame/{id}', [FrameContentsAPIController::class, 'restore_frame']);
+    Route::get('frameComments/{id}', [CommentsAPIController::class, 'frameComments']);
+    Route::get('frameContentComments/{id}', [FrameContentCommentsAPIController::class, 'frameContentComments']);
+    Route::get('reactionByFrame/{id}', [ReactionsAPIController::class, 'reactionByFrame']);
+    Route::get('reactionByFrameContent/{id}', [ReactionsAPIController::class, 'reactionByFrameContent']);
+    Route::get('reactionBycomment/{id}', [ReactionsAPIController::class, 'reactionBycomment']);
+    Route::get('reactionByFrameContentComment/{id}', [ReactionsAPIController::class, 'reactionByFrameContentComment']);
+    Route::get('friend_requests/{user_id}', [UserContactAPIController::class, 'friend_requests']);
+    Route::get('my_friend_requests/{user_id}', [UserContactAPIController::class, 'my_friend_requests']);
+    Route::post('add_thumbnail_to_frame', [FramesAPIController::class, 'add_thumbnail_to_frame']);
+    Route::get('usersTaggedOnFrame/{id}', [TagsAPIController::class, 'usersTaggedOnFrame']);
+    Route::get('userNotifications/{id}', [NotificationsAPIController::class, 'userNotifications']);
+    Route::controller(AuthAPIController::class)->group(function () {
+        Route::post('validatePhoneNumber', 'validatePhoneNumber'); //Twilio
+        Route::post('validateOTP', 'validateOTP');    //Twilio
+        Route::post('updateUser/{user}', 'updateUser');
+        Route::get('user/verify/{verification_code}', 'verifyUser');
+        Route::get('user/resend-verification/{user}', 'resendVerification');
+    });
+});
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-/**
- * Login and Register(includes email verification sent but email validation not yet working)
- */
+
 Route::controller(AuthAPIController::class)->group(function () {
     Route::post('register', 'register'); // done but email verify not yet ready
     Route::post('login', 'login');
-    Route::post('validatePhoneNumber', 'validatePhoneNumber');
-    Route::post('validateOTP', 'validateOTP');
-    Route::post('updateUser/{user}', 'updateUser');
-    Route::get('user/verify/{verification_code}', 'verifyUser');
 });
-Route::get('email-verified', function(){
+Route::get('email-verified', function () {
     return view('email.email-verified');
 })->name('email-verified');
-Route::get('email-not-verified', function(){
+Route::get('email-not-verified', function () {
     return view('email.email-not-verified');
 })->name('email-not-verified');
-// Route::get('/email/verify', function () {
-//     return view('auth.verify-email');
-// })->middleware('auth')->name('verification.notice');
-
-
-// Route::post('email/verification-notification', [VerificationController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
-// Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify')->middleware('auth:sanctum');
 
 /**
- * Google Sign up and automatically sign in
+ * Google Sign up and sign in
  */
 Route::post('/signup-socialite', [SocialiteController::class, 'googleSignup']);
 Route::post('/signin-socialite', [SocialiteController::class, 'googleSignin']);

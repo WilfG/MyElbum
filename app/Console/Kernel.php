@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\API\AuthAPIController;
 use App\Models\FrameBin;
 use App\Models\FrameContent;
 use Carbon\Carbon;
@@ -28,6 +29,10 @@ class Kernel extends ConsoleKernel
            $new = new FrameContentsAPIController();
            $new->empty_bin();
         })->everySixHours();
+        $schedule->call(function () {
+           $verification = new AuthAPIController();
+           $verification->empty_verification();
+        })->everyTwoMinutes();
     }
 
     /**

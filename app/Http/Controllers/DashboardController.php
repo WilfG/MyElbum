@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 class DashboardController extends Controller
 {
@@ -98,6 +99,13 @@ class DashboardController extends Controller
                   <!-- /.info-box -->';
             // echo '<span>' . $request->start_period . '</span>';
         }
+    }
+
+    public function generate_signature(){
+        return URL::temporarySignedRoute('connexion', now()->addMinute());
+    }
+    public function generate_signature_signup(){
+        return URL::temporarySignedRoute('inscrire', now()->addMinute(5));
     }
 
     /**
