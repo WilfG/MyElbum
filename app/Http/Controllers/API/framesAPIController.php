@@ -205,6 +205,9 @@ class FramesAPIController extends Controller
             $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
             $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
             $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
+            $plan = DB::table('plans')->where('id', $frame->plan_id)->first();
+            $frame->user_id = $id;
+            $frame->plan = $plan;
             $frame->contents = $contents;
             $frame->comments = $comments;
             $frame->tags = $tags;
