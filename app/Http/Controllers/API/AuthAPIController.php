@@ -269,10 +269,9 @@ class AuthAPIController extends Controller
     public function logout(Request $request)
     {
         try {
-            $validator = Validator::make($request->only('user_id', 'session_id', 'access_token'), [
+            $validator = Validator::make($request->only('user_id', 'session_id'), [
                 'user_id' => ['required', 'string'],
                 'session_id' => ['required', 'min:6', 'max:255', 'string'],
-                'access_token' => ['required', 'string'],
             ]);
             if ($validator->fails())
                 return response()->json($validator->errors(), 400);
