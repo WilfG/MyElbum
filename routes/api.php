@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => 'auth.api'], function () {
+// Route::group(['middleware' => 'auth.api'], function () {
 
     Route::resources([
         'plans' => PlansAPIController::class,
@@ -77,10 +77,11 @@ Route::group(['middleware' => 'auth.api'], function () {
         Route::post('validatePhoneNumber', 'validatePhoneNumber'); //Twilio
         Route::post('validateOTP', 'validateOTP');    //Twilio
         Route::post('updateUser/{user}', 'updateUser');
+        Route::post('updateUserOnRegister/{user}', 'updateUser');
         Route::get('user/verify/{verification_code}', 'verifyUser');
         Route::get('user/resend-verification/{user}', 'resendVerification');
     });
-});
+// });
 
 Route::middleware('auth:sanctum', 'verified')->get('/user', function (Request $request) {
     return $request->user();

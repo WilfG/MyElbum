@@ -30,17 +30,17 @@ class AuthAPIController extends Controller
     {
         try {
             $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'latitude', 'longitude', 'region', 'picture'), [
-                'lastname' => ['required', 'min:2', 'max:50', 'string'],
-                'firstname' => ['required', 'min:2', 'max:50', 'string'],
-                'country' => ['required', 'string'],
-                'phoneNumber' => ['required', 'min:8', 'max:15', 'string'],
-                'birthDate' => ['required', 'string'],
-                'username' => ['required', 'min:2', 'max:50', 'string'],
+                'lastname' => ['nullable', 'min:2', 'max:50', 'string'],
+                'firstname' => ['nullable', 'min:2', 'max:50', 'string'],
+                'country' => ['nullable', 'string'],
+                'phoneNumber' => ['nullable', 'min:8', 'max:15', 'string'],
+                'birthDate' => ['nullable', 'string'],
+                'username' => ['nullable', 'min:2', 'max:50', 'string'],
                 'email' => ['required', 'email', 'unique:users,email'],
-                'password' => ['required', 'min:6', 'max:255', 'string'],
-                'latitude' => ['required', 'string',],
-                'longitude' => ['required', 'string',],
-                'region' => ['required', 'string',],
+                'password' => ['nullable', 'min:6', 'max:255', 'string'],
+                'latitude' => ['nullable', 'string',],
+                'longitude' => ['nullable', 'string',],
+                'region' => ['nullable', 'string',],
                 'picture' => 'nullable',
                 'picture' => 'file|mimes:jpeg,jpg,png,gif,PNG,JPG,JPEG',
             ]);
@@ -49,7 +49,7 @@ class AuthAPIController extends Controller
                 return response()->json($validator->errors(), 400);
 
             $input = $request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'latitude', 'longitude', 'region');
-            $input['password'] = Hash::make($request['password']);
+            // $input['password'] = Hash::make($request['password']);
             $input['isVerified'] = 0;
             // var_dump($input); die;
             $user = User::create($input);
@@ -83,10 +83,10 @@ class AuthAPIController extends Controller
 
             // event(new Registered($user));
 
-            $contact = Contact::firstOrNew(['id' => $user->id]);
-            $contact->contact_firstname = $user->firstname;
-            $contact->contact_lastname = $user->lastname;
-            $contact->save();
+            // $contact = Contact::firstOrNew(['id' => $user->id]);
+            // $contact->contact_firstname = $user->firstname;
+            // $contact->contact_lastname = $user->lastname;
+            // $contact->save();
             Auth::login($user);
             //log user session
             $session_id = Session::getId();
@@ -103,6 +103,7 @@ class AuthAPIController extends Controller
             );
             $data =  [
                 // 'token' => $user->createToken('Sanctum+Socialite')->plainTextToken,
+                'session_id' => $session_id,
                 'token' => $accessToken,
                 'user' => $user,
                 'status' => Auth::check(),
@@ -230,6 +231,11 @@ class AuthAPIController extends Controller
                         'user_id' => $user->id,
                     ]);
 
+                    $accessToken = AccessToken::updateOrCreate(
+                        ['user_id' => $user->id],
+                        ['access_token' => Str::random(191)]
+                    );
+
                     $plan = DB::table('souscriptions')
                         ->join('plans', 'souscriptions.plan_id', 'plans.id')
                         ->where('souscriptions.user_id', $user->id)
@@ -247,6 +253,7 @@ class AuthAPIController extends Controller
 
                     $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                     $data =  [
+                        'session_id' => $session_id,
                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'user' => $user,
                         'plan' => $plan,
@@ -380,6 +387,53 @@ class AuthAPIController extends Controller
             }
 
             $user->update($input);
+
+            return response()->json([
+                'user' => $input,
+                'message' => 'User informations successfully updated'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json($th->getMessage(), 500);
+        }
+    }
+    public function updateUserOnRegister(Request $request, User $user)
+    {
+        try {
+            $validator = Validator::make($request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password', 'picture'), [
+                'lastname' => ['required', 'min:2', 'max:50', 'string'],
+                'firstname' => ['required', 'min:2', 'max:50', 'string'],
+                'country' => ['nullable', 'string'],
+                'phoneNumber' => ['nullable', 'min:8', 'max:15', 'string'],
+                'birthDate' => ['nullable', 'string'],
+                'username' => ['required', 'min:2', 'max:50', 'string'],
+                'email' => ['required', 'email',],
+                'password' => ['required', 'min:6', 'max:255', 'string'],
+                'picture' => 'nullable',
+                'picture' => 'file|mimes:jpeg,jpg,png,gif,PNG,JPG,JPEG',
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 400);
+
+            $input = $request->only('lastname', 'firstname', 'country', 'phoneNumber', 'birthDate', 'username', 'email', 'password');
+            $input['password'] = Hash::make($request['password']);
+
+            if ($request->hasfile('picture')) {
+                if (!is_null($user->profil_picture)) {
+                    unlink(public_path($user->profil_picture));
+                }
+                $ext = explode('.', $request->picture->getClientOriginalName())[1];
+                $filename  = $user->firstname . '_' . $user->lastname . '_avatar_' . date('Ymd') . '_' . time() . '.' . $ext;
+                $path = 'Users_pictures/' . $user->firstname . '_' . $user->lastname;
+                $input['profil_picture'] = $path . '/' . $filename;
+                $request->picture->move(public_path($path), $filename);
+            }
+
+            $user->update($input);
+
+            $contact = Contact::firstOrNew(['id' => $user->id]);
+            $contact->contact_firstname = $user->firstname;
+            $contact->contact_lastname = $user->lastname;
+            $contact->save();
 
             return response()->json([
                 'user' => $input,

@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('user_sessions', function (Blueprint $table) {
             $table->id();
-            $table->string('region');
-            $table->string('country');
+            $table->string('region')->nullable();
+            $table->string('country')->nullable();
             $table->string('session_id');
             $table->boolean('expired')->default(false);
             $table->index('user_id');

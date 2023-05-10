@@ -64,6 +64,14 @@ class SocialiteController extends Controller
             $contact->save();
 
             Auth::login($user);
+            $session_id = Session::getId();
+            
+            User_session::create([
+                'region' => $request->region,
+                'country' => $request->country,
+                'session_id' => $session_id,
+                'user_id' => $user->id,
+            ]);
 
             $accessToken = AccessToken::updateOrCreate(
                 ['user_id' => $user->id],
@@ -71,6 +79,7 @@ class SocialiteController extends Controller
             );
 
             $data =  [
+                'session_id' => $session_id,
                 // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                 'token' => $accessToken,
                 'user' => $user,
@@ -105,12 +114,18 @@ class SocialiteController extends Controller
                 );
 
                 $session_id = Session::getId();
-                // User_session::create([
-                //     'region' => $request->region,
-                //     'country' => $request->country,
-                //     'session_id' => $session_id,
-                //     'user_id' => $user->id,
-                // ]);
+                User_session::create([
+                    'region' => $request->region,
+                    'country' => $request->country,
+                    'session_id' => $session_id,
+                    'user_id' => $user->id,
+                ]);
+
+                $accessToken = AccessToken::updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['access_token' => Str::random(191)]
+                );
+
                 $plan = DB::table('souscriptions')
                     ->join('plans', 'souscriptions.plan_id', 'plans.id')
                     ->where('souscriptions.user_id', $user->id)
