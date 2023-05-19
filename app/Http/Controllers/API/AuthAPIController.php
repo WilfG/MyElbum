@@ -523,4 +523,19 @@ class AuthAPIController extends Controller
         }
         return 'oui';
     }
+
+    public function users($id)
+    {
+        try {
+            //code...
+            $user = User::where('id', $id)->first();
+            if ($user) {
+                return response()->json(['user' => $user]);
+            }
+            return response()->json(['message' => 'no user with this id']);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
+
+        }
+    }
 }

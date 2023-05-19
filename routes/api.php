@@ -54,6 +54,7 @@ use Illuminate\Support\Facades\Route;
     Route::get('user_contacts/{id}', [ContactsAPIController::class, 'userContacts']);
     Route::get('myelbumcontacts/', [ContactsAPIController::class, 'show']);
     Route::post('tagusertoframe/', [TagsAPIController::class, 'store']);
+    Route::get('users/{id}', [AuthAPIController::class, 'users']);
 
     // Route::post('/registered-users', [ContactsAPIController::class, 'show']);
     Route::get('frame_contents/frame/{id}', [FrameContentsAPIController::class, 'frame_contents']);
