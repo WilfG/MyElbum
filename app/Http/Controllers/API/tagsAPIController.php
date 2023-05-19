@@ -123,4 +123,23 @@ class TagsAPIController extends Controller
 
         return response()->json(['users_tagged' => $users]);
     }
+
+    public function framesWhereUserIstagged($id){
+        try {
+            $frames = DB::table(('frames'))
+            ->join('tags', 'tags.frame_id', 'frames.id')
+            ->where('tags.contact_id', $id)
+            ->select('frames.*')->get();
+
+            if ($frames) {
+                return response()->json(['frames' => $frames]);
+            }
+
+            return response()->json(['message' => 'you are not tagged on any frame yet']);
+
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
+        }
+
+    }
 }

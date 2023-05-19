@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Frame;
 use App\Models\FrameBin;
 use App\Models\FrameContent;
 use App\Models\FrameContentComment;
@@ -138,6 +139,10 @@ class FrameContentsAPIController extends Controller
                         $file->move(public_path($path), $filename);
                         $frame_content = FrameContent::create($input);
                     }
+                    $frame_to_live = Frame::where('id', $frame_content->frame_id)->first();
+                    $frame_to_live->frame_status = 'live';
+                    $frame_to_live->save();
+
                     $data = [
                         'frame_content' => $frame_content,
                         'message' => 'Contents added successfully.'
@@ -180,9 +185,9 @@ class FrameContentsAPIController extends Controller
 
     public function updateFrameContent(Request $request, $id)
     {
-        
+
         try {
-            $validator = Validator::make($request->only('path', 'frame_id','user_id',  'pan', 'zoom', 'height', 'width', 'position', 'size'), [
+            $validator = Validator::make($request->only('path', 'frame_id', 'user_id',  'pan', 'zoom', 'height', 'width', 'position', 'size'), [
                 'path' => 'required',
                 'path' => 'file|mimes:m4v,avi,flv,mp4,mov,jpeg,jpg,png,gif,PNG,JPG,JPEG,GIF',
                 'frame_id' => 'required|numeric',
@@ -213,7 +218,7 @@ class FrameContentsAPIController extends Controller
                 if ($content_to_update->content_type == 'image') {
                     if (in_array($extension, $tab_extensions)) {
                         $number_of_video_content = DB::table('frame_contents')->where('content_type', '=', 'video')->where('frame_id', '=', $request->frame_id)->count();
-                    
+
                         if ($plan->plan_title == 'Free Trial') {
                             if ($number_of_video_content >= 1) {
                                 return response()->json(['error' => 'You cannot add more video in this plan, you can update image by image.']);
@@ -249,7 +254,7 @@ class FrameContentsAPIController extends Controller
 
                 $input = $request->only('filepath', 'frame_id',  'pan', 'zoom', 'height', 'width', 'position', 'size');
 
-               $input['filepath'] = $path . '/' . $filename;
+                $input['filepath'] = $path . '/' . $filename;
 
                 if (in_array($extension, $tab_extensions)) {
                     $input['content_type'] = 'video';

@@ -72,6 +72,7 @@ use Illuminate\Support\Facades\Route;
     Route::get('my_friend_requests/{user_id}', [UserContactAPIController::class, 'my_friend_requests']);
     Route::post('add_thumbnail_to_frame', [FramesAPIController::class, 'add_thumbnail_to_frame']);
     Route::get('usersTaggedOnFrame/{id}', [TagsAPIController::class, 'usersTaggedOnFrame']);
+    Route::get('framesWhereUserIstagged/{id}', [TagsAPIController::class, 'framesWhereUserIstagged']);
     Route::get('userNotifications/{id}', [NotificationsAPIController::class, 'userNotifications']);
     Route::controller(AuthAPIController::class)->group(function () {
         Route::post('validatePhoneNumber', 'validatePhoneNumber'); //Twilio
