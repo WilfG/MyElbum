@@ -79,7 +79,7 @@ use Illuminate\Support\Facades\Route;
         Route::post('validatePhoneNumber', 'validatePhoneNumber'); //Twilio
         Route::post('validateOTP', 'validateOTP');    //Twilio
         Route::post('updateUser/{user}', 'updateUser');
-        Route::post('updateUserOnRegister/{user}', 'updateUser');
+        Route::post('updateUserOnRegister/{user}', 'updateUserOnRegister');
         Route::get('user/verify/{verification_code}', 'verifyUser');
         Route::get('user/resend-verification/{user}', 'resendVerification');
     });

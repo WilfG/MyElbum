@@ -430,13 +430,16 @@ class AuthAPIController extends Controller
 
             $user->update($input);
 
-            $contact = Contact::firstOrNew(['id' => $user->id]);
-            $contact->contact_firstname = $user->firstname;
-            $contact->contact_lastname = $user->lastname;
-            $contact->save();
+            $contact = Contact::create([
+                'id' => $user->id,
+                'contact_firstname' => $user->firstname,
+                'contact_lastname' => $user->lastname,
+                'phoneNumber' => $user->phoneNumber,
+            ]);
 
             return response()->json([
                 'user' => $input,
+                'contact' => $contact,
                 'message' => 'User informations successfully updated'
             ]);
         } catch (\Throwable $th) {
@@ -535,7 +538,6 @@ class AuthAPIController extends Controller
             return response()->json(['message' => 'no user with this id']);
         } catch (\Throwable $th) {
             return response()->json(['error' => $th->getMessage()]);
-
         }
     }
 }
