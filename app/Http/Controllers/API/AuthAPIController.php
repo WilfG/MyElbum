@@ -253,8 +253,18 @@ class AuthAPIController extends Controller
 
                     $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                     $data =  [
+//                         'session_id' => $session_id,
+//                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+//                         'user' => $user,
+//                         'plan' => $plan,
+//                         'frames' => $frames,
+//                         'friend_requests' => $friend_requests,
+//                         'notifications' => $notifications,
+//                         'status' => Auth::check(),
+//                         'message' => 'you are successfully logged in'
+                        
+                        'token' => $accessToken,
                         'session_id' => $session_id,
-                        'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'user' => $user,
                         'plan' => $plan,
                         'frames' => $frames,
