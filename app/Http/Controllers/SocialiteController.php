@@ -25,10 +25,12 @@ class SocialiteController extends Controller
     {
         try {
 
-            $validator = Validator::make($request->only('firstname', 'lastname', 'google_id', 'email'), [
+            $validator = Validator::make($request->only('firstname', 'lastname', 'google_id', 'email', 'region', 'country'), [
                 'firstname' => ['required', 'min:2', 'max:50', 'string'],
                 'lastname' => ['required', 'min:2', 'max:50', 'string'],
                 'google_id' => ['required', 'string'],
+                'region' => ['nullable', 'string'],
+                'country' => ['nullable', 'string'],
                 'email' => ['required',  Rule::unique('users'),],
             ]);
             if ($validator->fails())
@@ -95,8 +97,10 @@ class SocialiteController extends Controller
     public function googleSignin(Request $request)
     {
         try {
-            $validator = Validator::make($request->only('google_id', 'email'), [
+            $validator = Validator::make($request->only('google_id', 'email', 'region', 'country'), [
                 'google_id' => ['required', 'string'],
+                'region' => ['nullable', 'string'],
+                'country' => ['nullable', 'string'],
                 'email' => ['required', 'email', 'exists:users,email'],
             ]);
             if ($validator->fails())

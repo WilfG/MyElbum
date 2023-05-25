@@ -82,6 +82,7 @@ use Illuminate\Support\Facades\Route;
         Route::post('updateUserOnRegister/{user}', 'updateUserOnRegister');
         Route::get('user/verify/{verification_code}', 'verifyUser');
         Route::get('user/resend-verification/{user}', 'resendVerification');
+        Route::put('updateSettings/{user}', 'updateSettings');
     });
 // });
 

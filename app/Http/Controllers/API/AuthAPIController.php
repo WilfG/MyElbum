@@ -19,6 +19,7 @@ use Twilio\Rest\Client;
 use Adrianorosa\GeoLocation\GeoLocation;
 use App\Models\AccessToken;
 use App\Models\FrameContent;
+use App\Models\Setting;
 use App\Models\User_session;
 use App\Models\User_verification;
 use Carbon\Carbon;
@@ -101,11 +102,14 @@ class AuthAPIController extends Controller
                 ['user_id' => $user->id],
                 ['access_token' => Str::random(191)]
             );
+
+            $settings = Setting::all();
             $data =  [
                 // 'token' => $user->createToken('Sanctum+Socialite')->plainTextToken,
                 'session_id' => $session_id,
                 'token' => $accessToken,
                 'user' => $user,
+                'settings' => $settings,
                 'status' => Auth::check(),
                 'message' => 'We send you a verification mail..'
             ];
@@ -253,16 +257,16 @@ class AuthAPIController extends Controller
 
                     $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
                     $data =  [
-//                         'session_id' => $session_id,
-//                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
-//                         'user' => $user,
-//                         'plan' => $plan,
-//                         'frames' => $frames,
-//                         'friend_requests' => $friend_requests,
-//                         'notifications' => $notifications,
-//                         'status' => Auth::check(),
-//                         'message' => 'you are successfully logged in'
-                        
+                        //                         'session_id' => $session_id,
+                        //                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
+                        //                         'user' => $user,
+                        //                         'plan' => $plan,
+                        //                         'frames' => $frames,
+                        //                         'friend_requests' => $friend_requests,
+                        //                         'notifications' => $notifications,
+                        //                         'status' => Auth::check(),
+                        //                         'message' => 'you are successfully logged in'
+
                         'token' => $accessToken,
                         'session_id' => $session_id,
                         'user' => $user,
@@ -447,9 +451,14 @@ class AuthAPIController extends Controller
                 'phoneNumber' => $user->phoneNumber,
             ]);
 
+            $notification_setting = Setting::create([
+                'user_id' => $user->id,
+            ]);
+
             return response()->json([
                 'user' => $input,
                 'contact' => $contact,
+                'notification_setting' => $notification_setting,
                 'message' => 'User informations successfully updated'
             ]);
         } catch (\Throwable $th) {
@@ -546,6 +555,41 @@ class AuthAPIController extends Controller
                 return response()->json(['user' => $user]);
             }
             return response()->json(['message' => 'no user with this id']);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()]);
+        }
+    }
+
+    public function updateSettings(Request $request, $user)
+    {
+        try {
+            $validator = Validator::make($request->only('notification_sounds','notification_vibrate','notification_contentComments_reactions','notification_add_content_to_profile_album','notification_new_tag_in_content','notification_content_deleted'
+            ), [
+                'notification_sounds' => ['nullable', 'numeric'],
+                'notification_vibrate' => ['nullable', 'numeric'],
+                'notification_contentComments_reactions' => ['nullable', 'numeric'],
+                'notification_add_content_to_profile_album' => ['nullable', 'numeric'],
+                'notification_new_tag_in_content' => ['nullable', 'numeric'],
+                'notification_content_deleted' => ['nullable', 'numeric'],
+
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()]);
+            }
+// var_dump($request->notification_sounds);die;
+            $user_notification_settings = Setting::where('user_id', $user)->first();
+            $user_notification_settings->notification_sounds = $request->notification_sounds;
+            $user_notification_settings->notification_vibrate = $request->notification_vibrate;
+            $user_notification_settings->notification_contentComments_reactions = $request->notification_contentComments_reactions;
+            $user_notification_settings->notification_add_content_to_profile_album = $request->notification_add_content_to_profile_album;
+            $user_notification_settings->notification_new_tag_in_content = $request->notificatnotification_new_tag_in_contention_add_content_to_profile_album;
+            $user_notification_settings->notification_content_deleted = $request->notification_content_deleted;
+            $user_notification_settings->save();
+            if ($user_notification_settings) {
+                return response()->json(['message' => 'Setting saved successfully..']);
+            }
+            return response()->json(['message' => 'settings failed to save']);
         } catch (\Throwable $th) {
             return response()->json(['error' => $th->getMessage()]);
         }
