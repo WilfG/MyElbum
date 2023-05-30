@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Comment;
+use App\Models\Frame;
+use App\Models\FrameContent;
+use App\Models\FrameContentComment;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +23,8 @@ class NotificationsAPIController extends Controller
     {
         $notifications = DB::table('notifications')->get();
         // ->where('user_id', Auth::id())->get(); // à améliorer
-        return response()->json(['notifications' => $notifications]);    }
+        return response()->json(['notifications' => $notifications]);
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -45,7 +50,30 @@ class NotificationsAPIController extends Controller
     public function userNotifications($id)
     {
         $notifications = DB::table('notifications')
-        ->where('user_id', '=', $id)->get();
+            ->where('user_id', '=', $id)->get();
+        foreach ($notifications as $key => $value) {
+            $post = explode('_', $value->post_id);
+            if ($post[0] == 'frame') {
+                $post_frame = Frame::where('id', $post[1])->first();
+                $value->frame = $post_frame;
+            }
+            
+            if ($post[0] == 'frameContent') {
+                $post_frame = FrameContent::where('id', $post[1])->first();
+                $value->frame_content = $post_frame;
+            }
+
+            if ($post[0] == 'frameComment') {
+                $post_frame = Comment::where('id', $post[1])->first();
+                $value->frame_comment = $post_frame;
+            }
+            
+            if ($post[0] == 'contentComment') {
+                $post_frame = FrameContentComment::where('id', $post[1])->first();
+                $value->frame_content_comment = $post_frame;
+            }
+        }
+
 
         return response()->json(['user_notifications' => $notifications]);
     }

@@ -18,7 +18,10 @@ use Twilio\Rest\Client;
 // use Stevebauman\Location\Facades\Location;
 use Adrianorosa\GeoLocation\GeoLocation;
 use App\Models\AccessToken;
+use App\Models\Comment;
+use App\Models\Frame;
 use App\Models\FrameContent;
+use App\Models\FrameContentComment;
 use App\Models\Setting;
 use App\Models\User_session;
 use App\Models\User_verification;
@@ -199,6 +202,28 @@ class AuthAPIController extends Controller
                     // $longitude = $location->getLongitude();
                     // dd($latitude);
                     $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
+                    foreach ($notifications as $key => $value) {
+                        $post = explode('_', $value->post_id);
+                        if ($post[0] == 'frame') {
+                            $post_frame = Frame::where('id', $post[1])->first();
+                            $value->frame = $post_frame;
+                        }
+                        
+                        if ($post[0] == 'frameContent') {
+                            $post_frame = FrameContent::where('id', $post[1])->first();
+                            $value->frame_content = $post_frame;
+                        }
+            
+                        if ($post[0] == 'frameComment') {
+                            $post_frame = Comment::where('id', $post[1])->first();
+                            $value->frame_comment = $post_frame;
+                        }
+                        
+                        if ($post[0] == 'contentComment') {
+                            $post_frame = FrameContentComment::where('id', $post[1])->first();
+                            $value->frame_content_comment = $post_frame;
+                        }
+                    }
                     $data =  [
                         // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'token' => $accessToken,

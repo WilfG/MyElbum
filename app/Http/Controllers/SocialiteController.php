@@ -24,7 +24,6 @@ class SocialiteController extends Controller
     public function googleSignup(Request $request)
     {
         try {
-
             $validator = Validator::make($request->only('firstname', 'lastname', 'google_id', 'email', 'region', 'country'), [
                 'firstname' => ['required', 'min:2', 'max:50', 'string'],
                 'lastname' => ['required', 'min:2', 'max:50', 'string'],
