@@ -60,8 +60,9 @@ class ContactsAPIController extends Controller
     {
         $userContacts = DB::table('user_contact_friends')
             ->join('contacts', 'user_contact_friends.contact_id', '=', 'contacts.id')
+            ->join('users', 'user_contact_friends.contact_id', 'users.id')
             ->where('user_contact_friends.user_id', '=', $id)
-            ->select('contacts.*')->get();
+            ->select('contacts.*', 'users.profil_picture')->get();
 
         if ($userContacts) {
             return response()->json(['userContacts' => $userContacts]);

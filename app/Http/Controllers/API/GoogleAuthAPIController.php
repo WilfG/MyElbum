@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Models\User;
 
 use Illuminate\Support\Facades\Auth;
@@ -28,9 +29,11 @@ class GoogleAuthAPIController extends Controller
                     'email' => $google_user->getEmail(),
                     'google_id' => $google_user->getId()
                 ]);
-
+                $settings = Setting::create([
+                    'user_id' => $user->id,
+                ]);
                 Auth::login($new_user);
-                return Response::json([$new_user]);
+                return response()->json([$new_user]);
             } else {
                 Auth::login($user);
                 return Response::json([$user]);

@@ -50,6 +50,7 @@ class NotificationsAPIController extends Controller
     public function userNotifications($id)
     {
         $notifications = DB::table('notifications')
+            ->join('contacts', 'notifications.contact_id', 'contacts.id')
             ->where('user_id', '=', $id)->get();
         foreach ($notifications as $key => $value) {
             $post = explode('_', $value->post_id);
@@ -57,17 +58,22 @@ class NotificationsAPIController extends Controller
                 $post_frame = Frame::where('id', $post[1])->first();
                 $value->frame = $post_frame;
             }
-            
+
             if ($post[0] == 'frameContent') {
-                $post_frame = FrameContent::where('id', $post[1])->first();
-                $value->frame_content = $post_frame;
+                $post_frameContent = FrameContent::where('id', $post[1])->first();
+                if ($post_frameContent) {
+                    $frame_id = $post_frameContent->frame_id;
+                    $post_frame = Frame::where('id', $frame_id)->first();
+                    $post_frameContent->frame = $post_frame;
+                }
+                $value->frame_content = $post_frameContent;
             }
 
             if ($post[0] == 'frameComment') {
                 $post_frame = Comment::where('id', $post[1])->first();
                 $value->frame_comment = $post_frame;
             }
-            
+
             if ($post[0] == 'contentComment') {
                 $post_frame = FrameContentComment::where('id', $post[1])->first();
                 $value->frame_content_comment = $post_frame;

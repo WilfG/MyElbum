@@ -56,7 +56,10 @@ class FramesAPIController extends Controller
                 return response()->json(['error' => 'You have to suscribe to a plan first.']);
             }
 
-            $verify_plan_frame = DB::table('frames')->where('frames.plan_id', '=', $request->plan_id)->first();
+            $verify_plan_frame = DB::table('frames')
+            ->where('frames.plan_id', '=', $request->plan_id)
+            ->where('frames.user_id', '=', $request->user_id)
+            ->first();
             if ($verify_plan_frame) {
                 return response()->json(['error' => 'This frame is already linked to a plan']);
             }
@@ -85,13 +88,41 @@ class FramesAPIController extends Controller
      */
     public function show($id)
     {
-        $frame = Frame::find($id);
-        if ($frame) {
-            return response()->json(['Frame' => $frame]);
-        } else {
-            return response()->json(['message' => 'Frame not found']);
+        $frame = DB::table('frames')
+        ->where('frames.id', '=', $id)
+        ->join('souscriptions', 'frames.plan_id', '=', 'souscriptions.plan_id')
+        ->join('users', 'souscriptions.user_id', '=', 'users.id')
+        ->select('frames.*', 'users.firstname', 'users.lastname', 'users.profil_picture')
+        ->first();
+    
+            if ($frame) {
+                $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
+                $comments = DB::table('comments')->where('frame_id', $frame->id)->join('users', 'comments.contact_id', 'users.id')->select('comments.*', 'users.profil_picture')->get();
+                $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
+                $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
+                $plan = DB::table('plans')->where('id', $frame->plan_id)->first();
+                $frame->user_id = $id;
+                $frame->plan = $plan;
+                $frame->contents = $contents;
+                $frame->comments = $comments;
+                $frame->tags = $tags;
+                $frame->reactions = $reactions;
+            
+                foreach ($frame->contents as $content) {
+                    $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
+                    $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
+                    $content_reactions = DB::table('reactions')->where('frame_content_id', $content->id)->get();
+                    $content->content_comments = $content_comments;
+                    $content->content_tags = $content_tags;
+                    $content->content_reactions = $content_reactions;
+                }
+            
+                return response()->json(['Frame' => $frame]);
+            } else {
+                return response()->json(['message' => 'Frame not found']);
+            }
+    
         }
-    }
 
     /**
      * Verify if your password before frame transfer 
@@ -202,7 +233,10 @@ class FramesAPIController extends Controller
 
         foreach ($frames as $frame) {
             $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
-            $comments = DB::table('comments')->where('frame_id', $frame->id)->get();
+            $comments = DB::table('comments')->where('frame_id', $frame->id)
+            ->join('users', 'comments.contact_id', 'users.id')
+            ->select('comments.*', 'users.profil_picture')
+            ->get();
             $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
             $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
             $plan = DB::table('plans')->where('id', $frame->plan_id)->first();

@@ -132,8 +132,9 @@ class CommentsAPIController extends Controller
         try {
             $frameComments = DB::table('comments')
             ->join('contacts', 'comments.contact_id', 'contacts.id')
+            ->join('users', 'comments.contact_id', 'users.id')
             ->where('comments.frame_id', $id)
-            ->select('comments.*', 'contacts.*')
+            ->select('comments.*', 'contacts.contact_firstname', 'contacts.contact_lastname', 'users.profil_picture')
             ->get();
             return response()->json([
                 'frame_comments' => $frameComments,

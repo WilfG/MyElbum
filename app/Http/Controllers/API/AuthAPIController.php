@@ -106,7 +106,9 @@ class AuthAPIController extends Controller
                 ['access_token' => Str::random(191)]
             );
 
-            $settings = Setting::all();
+            $settings = Setting::create([
+                'user_id' => $user->id,
+            ]);
             $data =  [
                 // 'token' => $user->createToken('Sanctum+Socialite')->plainTextToken,
                 'session_id' => $session_id,
@@ -201,7 +203,9 @@ class AuthAPIController extends Controller
                     // $latitude = $location->getLatitude();
                     // $longitude = $location->getLongitude();
                     // dd($latitude);
-                    $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
+                    $notifications = DB::table('notifications')->where('user_id', $user->id)
+                    ->join('contacts', 'notifications.contact_id', 'contacts.id')
+                    ->get();
                     foreach ($notifications as $key => $value) {
                         $post = explode('_', $value->post_id);
                         if ($post[0] == 'frame') {
@@ -224,6 +228,8 @@ class AuthAPIController extends Controller
                             $value->frame_content_comment = $post_frame;
                         }
                     }
+
+                    $notification_settings = Setting::where('user_id', $user->id)->first();
                     $data =  [
                         // 'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
                         'token' => $accessToken,
@@ -233,6 +239,7 @@ class AuthAPIController extends Controller
                         'frames' => $frames,
                         'friend_requests' => $friend_requests,
                         'notifications' => $notifications,
+                        'notification_settings' => $notification_settings,
                         'status' => Auth::check(),
                         'message' => 'you are successfully logged in'
                     ];
@@ -281,6 +288,8 @@ class AuthAPIController extends Controller
                         ->where('user_contacts.request_status', '=', 'Pending')->get();
 
                     $notifications = DB::table('notifications')->where('user_id', $user->id)->get();
+
+                    $notification_settings = Setting::where('user_id', $user->id)->first();
                     $data =  [
                         //                         'session_id' => $session_id,
                         //                         'token' => $user->createToken('Sanctom+Socialite')->plainTextToken,
@@ -299,6 +308,7 @@ class AuthAPIController extends Controller
                         'frames' => $frames,
                         'friend_requests' => $friend_requests,
                         'notifications' => $notifications,
+                        'notification_settings' => $notification_settings,
                         'status' => Auth::check(),
                         'message' => 'you are successfully logged in'
                     ];
@@ -476,14 +486,14 @@ class AuthAPIController extends Controller
                 'phoneNumber' => $user->phoneNumber,
             ]);
 
-            $notification_setting = Setting::create([
+            $settings = Setting::create([
                 'user_id' => $user->id,
             ]);
 
             return response()->json([
                 'user' => $input,
                 'contact' => $contact,
-                'notification_setting' => $notification_setting,
+                'settings' => $settings,
                 'message' => 'User informations successfully updated'
             ]);
         } catch (\Throwable $th) {
