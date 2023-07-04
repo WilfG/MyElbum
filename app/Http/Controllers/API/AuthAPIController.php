@@ -244,8 +244,10 @@ class AuthAPIController extends Controller
                         'message' => 'you are successfully logged in'
                     ];
                     return response()->json($data, 200);
+                }else{
+                    return response()->json(['error' => 'Incorrect username or password']);
                 }
-            } elseif (isset($request->phoneNumber)) {
+            }elseif (isset($request->phoneNumber)) {
                 $validator = Validator::make($request->only('phoneNumber', 'password'), [
                     'phoneNumber' => ['required', 'exists:users,phoneNumber'],
                     'password' => ['required', 'min:6', 'max:255', 'string'],
