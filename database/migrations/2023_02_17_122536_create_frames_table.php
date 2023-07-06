@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('frames', function (Blueprint $table) {
             $table->id(); 
-            $table->string('frame_title');
+            $table->string('frame_title')->unique();
             $table->string('frame_description');
             $table->enum('frame_status', ['stock', 'archived', 'live'])->nullable()->default('stock');
             $table->string('thumbnail')->nullable();

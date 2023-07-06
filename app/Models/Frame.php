@@ -9,7 +9,7 @@ class Frame extends Model
 {
     use HasFactory;
 
-    protected $fillable = array('frame_title', 'frame_description', 'plan_id');
+    protected $fillable = array('frame_title', 'frame_description', 'plan_id', 'shareability', 'shareability_code', 'visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids');
 
 
     public function plan(){

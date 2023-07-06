@@ -48,24 +48,29 @@ class FramesAPIController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
-            $verif_souscription = DB::table('souscriptions')
+            $verif_souscription = DB::table('souscriptions')// verify if the current user have already suscribed to the current plan
                 ->where('user_id', '=', $request->user_id)
                 ->where('plan_id', '=', $request->plan_id)->first();
             // var_dump($verif_souscription); die;
             if (!$verif_souscription) {
-                return response()->json(['error' => 'You have to suscribe to a plan first.']);
+                return response()->json(['error' => 'You have to suscribe to this plan first.']);
             }
 
-            $verify_plan_frame = DB::table('frames')
-            ->where('frames.plan_id', '=', $request->plan_id)
-            ->where('frames.user_id', '=', $request->user_id)
-            ->first();
-            if ($verify_plan_frame) {
-                return response()->json(['error' => 'This frame is already linked to a plan']);
+            $verify_frame_title = DB::table('frames')->where('frame_title', $request->frame_title)->first();
+            if ($verify_frame_title) {
+                    return response()->json(['error' => "This frame's title is already in used."]);
             }
-
+            
+            $shareability_code = rand(10000, 99999);
             $input = $request->only('frame_title', 'frame_description', 'plan_id');
+            $input['shareability_code'] = $shareability_code;
+            // var_dump($input);die;
             $frame = Frame::create($input);
+            
+            $souscription = Souscription::where('user_id', '=', $request->user_id)
+            ->where('plan_id', '=', $request->plan_id)->first();
+            $souscription->frame_id = $verif_souscription->frame_id . ','. $frame->id;
+            $souscription->save();
 
             $data = [
                 'frame' => $frame,
@@ -89,40 +94,39 @@ class FramesAPIController extends Controller
     public function show($id)
     {
         $frame = DB::table('frames')
-        ->where('frames.id', '=', $id)
-        ->join('souscriptions', 'frames.plan_id', '=', 'souscriptions.plan_id')
-        ->join('users', 'souscriptions.user_id', '=', 'users.id')
-        ->select('frames.*', 'users.firstname', 'users.lastname', 'users.profil_picture')
-        ->first();
-    
-            if ($frame) {
-                $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
-                $comments = DB::table('comments')->where('frame_id', $frame->id)->join('users', 'comments.contact_id', 'users.id')->select('comments.*', 'users.profil_picture')->get();
-                $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
-                $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
-                $plan = DB::table('plans')->where('id', $frame->plan_id)->first();
-                $frame->user_id = $id;
-                $frame->plan = $plan;
-                $frame->contents = $contents;
-                $frame->comments = $comments;
-                $frame->tags = $tags;
-                $frame->reactions = $reactions;
-            
-                foreach ($frame->contents as $content) {
-                    $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
-                    $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
-                    $content_reactions = DB::table('reactions')->where('frame_content_id', $content->id)->get();
-                    $content->content_comments = $content_comments;
-                    $content->content_tags = $content_tags;
-                    $content->content_reactions = $content_reactions;
-                }
-            
-                return response()->json(['Frame' => $frame]);
-            } else {
-                return response()->json(['message' => 'Frame not found']);
+            ->where('frames.id', '=', $id)
+            ->join('souscriptions', 'frames.plan_id', '=', 'souscriptions.plan_id')
+            ->join('users', 'souscriptions.user_id', '=', 'users.id')
+            ->select('frames.*', 'users.firstname', 'users.lastname', 'users.profil_picture')
+            ->first();
+
+        if ($frame) {
+            $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
+            $comments = DB::table('comments')->where('frame_id', $frame->id)->join('users', 'comments.contact_id', 'users.id')->select('comments.*', 'users.profil_picture')->get();
+            $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
+            $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
+            $plan = DB::table('plans')->where('id', $frame->plan_id)->first();
+            $frame->user_id = $id;
+            $frame->plan = $plan;
+            $frame->contents = $contents;
+            $frame->comments = $comments;
+            $frame->tags = $tags;
+            $frame->reactions = $reactions;
+
+            foreach ($frame->contents as $content) {
+                $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
+                $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
+                $content_reactions = DB::table('reactions')->where('frame_content_id', $content->id)->get();
+                $content->content_comments = $content_comments;
+                $content->content_tags = $content_tags;
+                $content->content_reactions = $content_reactions;
             }
-    
+
+            return response()->json(['Frame' => $frame]);
+        } else {
+            return response()->json(['message' => 'Frame not found']);
         }
+    }
 
     /**
      * Verify if your password before frame transfer 
@@ -234,9 +238,9 @@ class FramesAPIController extends Controller
         foreach ($frames as $frame) {
             $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
             $comments = DB::table('comments')->where('frame_id', $frame->id)
-            ->join('users', 'comments.contact_id', 'users.id')
-            ->select('comments.*', 'users.profil_picture')
-            ->get();
+                ->join('users', 'comments.contact_id', 'users.id')
+                ->select('comments.*', 'users.profil_picture')
+                ->get();
             $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
             $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
             $plan = DB::table('plans')->where('id', $frame->plan_id)->first();
@@ -246,7 +250,7 @@ class FramesAPIController extends Controller
             $frame->comments = $comments;
             $frame->tags = $tags;
             $frame->reactions = $reactions;
-            
+
             foreach ($frame->contents as $content) {
                 $content_comments = DB::table('frame_content_comments')->where('frame_content_id', $content->id)->get();
                 $content_tags = DB::table('frame_content_tags')->where('frame_content_id', $content->id)->get();
@@ -256,7 +260,7 @@ class FramesAPIController extends Controller
                 $content->content_reactions = $content_reactions;
             }
         }
-       
+
         if ($frames) {
             return response()->json(['frames' => $frames]);
         } else {
@@ -276,18 +280,79 @@ class FramesAPIController extends Controller
     public function update(Request $request, Frame $frame)
     {
         try {
-            //code...
-            $validator = Validator::make($request->only('frame_title', 'frame_description'), [
-                'frame_title' => ['string'],
-                'frame_description' => ['string'],
-            ]);
+            if (($request->visibility == 'MyContacts_Except')) {
+                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability','visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
+                    'frame_title' => ['string'],
+                    'frame_description' => ['string'],
+                    'shareability' => ['numeric', 'required', 'max:1'],
+                    // 'shareability_code' => ['numeric', 'nullable'],
+                    'visibility' => ['string', 'nullable'],
+                    'visibility_except_ids' => ['string', 'required'],
+                    'canCommentReact' => ['string', 'nullable'],
+                    'canCommentReact_except_ids' => ['string', 'nullable'],
+                ]);
+            }
+
+            if (($request->canCommentReact == 'MyContacts_Except')) {
+                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability','visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
+                    'frame_title' => ['string'],
+                    'frame_description' => ['string'],
+                    'shareability' => ['numeric', 'required', 'max:1'],
+                    // 'shareability_code' => ['numeric', 'nullable'],
+                    'visibility' => ['string', 'nullable'],
+                    'visibility_except_ids' => ['string', 'nullable'],
+                    'canCommentReact' => ['string', 'nullable'],
+                    'canCommentReact_except_ids' => ['string', 'required'],
+                ]);
+            }
+
+            if ($request->frame_title) {
+                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability','visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
+                    'frame_title' => ['string'],
+                    'frame_description' => ['string'],
+                    'shareability' => ['numeric', 'required', 'max:1'],
+                    // 'shareability_code' => ['numeric', 'nullable'],
+                    'visibility' => ['string', 'nullable'],
+                    // 'visibility_except_ids' => ['string', 'nullable'],
+                    'canCommentReact' => ['string', 'nullable'],
+                    // 'canCommentReact_except_ids' => ['string', 'required'],
+                ]);
+            }
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+
+            if ($request->shareability) {
+                $shareability_code = rand(10000, 99999);
+            }else{
+                $shareability_code = $frame->shareability_code;
+            }
+
+            if ($request->visibility) {
+                $visibility_except_ids = $request->visibility_except_ids;
+            }else{
+                $visibility_except_ids = $frame->visibility_except_ids;
+            }
+           
+            if ($request->canCommentReact) {
+                $canCommentReact_except_ids = $request->canCommentReact_except_ids;
+            }else{
+                $canCommentReact_except_ids = $frame->canCommentReact_except_ids;
+            }
+            
+            // var_dump($shareability_code);die;
+
+
             $frame->update([
                 'frame_title' => $request->frame_title,
                 'frame_description' => $request->frame_description,
+                'shareability' => $request->shareability,
+                'shareability_code' => $shareability_code,
+                'visibility' => $request->visibility,
+                'visibility_except_ids' => $visibility_except_ids,
+                'canCommentReact' => $request->canCommentReact,
+                'canCommentReact_except_ids' => $canCommentReact_except_ids,
             ]);
 
             return response()->json([
