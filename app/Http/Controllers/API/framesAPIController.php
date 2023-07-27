@@ -48,7 +48,7 @@ class FramesAPIController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
-            $verif_souscription = DB::table('souscriptions')// verify if the current user have already suscribed to the current plan
+            $verif_souscription = DB::table('souscriptions') // verify if the current user have already suscribed to the current plan
                 ->where('user_id', '=', $request->user_id)
                 ->where('plan_id', '=', $request->plan_id)->first();
             // var_dump($verif_souscription); die;
@@ -58,18 +58,18 @@ class FramesAPIController extends Controller
 
             $verify_frame_title = DB::table('frames')->where('frame_title', $request->frame_title)->first();
             if ($verify_frame_title) {
-                    return response()->json(['error' => "This frame's title is already in used."]);
+                return response()->json(['error' => "This frame's title is already in used."]);
             }
-            
+
             $shareability_code = rand(10000, 99999);
             $input = $request->only('frame_title', 'frame_description', 'plan_id');
             $input['shareability_code'] = $shareability_code;
             // var_dump($input);die;
             $frame = Frame::create($input);
-            
+
             $souscription = Souscription::where('user_id', '=', $request->user_id)
-            ->where('plan_id', '=', $request->plan_id)->first();
-            $souscription->frame_id = $verif_souscription->frame_id . ','. $frame->id;
+                ->where('plan_id', '=', $request->plan_id)->first();
+            $souscription->frame_id = $verif_souscription->frame_id . ',' . $frame->id;
             $souscription->save();
 
             $data = [
@@ -228,13 +228,24 @@ class FramesAPIController extends Controller
      */
     public function userFrame($id)
     {
-        $frames = DB::table('frames')
-            // ->join('plans', 'frames.plan_id', '=', 'plans.id')
-            ->join('souscriptions', 'frames.plan_id', '=', 'souscriptions.plan_id')
-            ->join('users', 'souscriptions.user_id', '=', 'users.id')
-            ->where('souscriptions.user_id', '=', $id)
-            ->select('frames.*', 'frames.plan_id')->get();
+        $souscriptions = DB::table('souscriptions')
+            ->where('user_id', $id)->get();
 
+
+        $frame_ids = [];
+        foreach ($souscriptions as $souscription) {
+            $frame_ids[] = $souscription->frame_id;
+        }
+        $frame_ids = explode(',', implode(',', $frame_ids));
+        $filteredArray = array_filter($frame_ids, function ($value) {
+            return $value !== '';
+        });
+       $frame_ids = $filteredArray;
+
+        $frames = DB::table('frames')
+            ->whereIn('id', $frame_ids)->get();
+
+        // var_dump($frames);die;
         foreach ($frames as $frame) {
             $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
             $comments = DB::table('comments')->where('frame_id', $frame->id)
@@ -281,7 +292,7 @@ class FramesAPIController extends Controller
     {
         try {
             if (($request->visibility == 'MyContacts_Except')) {
-                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability','visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
+                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability', 'visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
                     'frame_title' => ['string'],
                     'frame_description' => ['string'],
                     'shareability' => ['numeric', 'required', 'max:1'],
@@ -294,7 +305,7 @@ class FramesAPIController extends Controller
             }
 
             if (($request->canCommentReact == 'MyContacts_Except')) {
-                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability','visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
+                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability', 'visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
                     'frame_title' => ['string'],
                     'frame_description' => ['string'],
                     'shareability' => ['numeric', 'required', 'max:1'],
@@ -307,7 +318,7 @@ class FramesAPIController extends Controller
             }
 
             if ($request->frame_title) {
-                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability','visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
+                $validator = Validator::make($request->only('frame_title', 'frame_description', 'shareability', 'visibility', 'visibility_except_ids', 'canCommentReact', 'canCommentReact_except_ids'), [
                     'frame_title' => ['string'],
                     'frame_description' => ['string'],
                     'shareability' => ['numeric', 'required', 'max:1'],
@@ -325,22 +336,22 @@ class FramesAPIController extends Controller
 
             if ($request->shareability) {
                 $shareability_code = rand(10000, 99999);
-            }else{
+            } else {
                 $shareability_code = $frame->shareability_code;
             }
 
             if ($request->visibility) {
                 $visibility_except_ids = $request->visibility_except_ids;
-            }else{
+            } else {
                 $visibility_except_ids = $frame->visibility_except_ids;
             }
-           
+
             if ($request->canCommentReact) {
                 $canCommentReact_except_ids = $request->canCommentReact_except_ids;
-            }else{
+            } else {
                 $canCommentReact_except_ids = $frame->canCommentReact_except_ids;
             }
-            
+
             // var_dump($shareability_code);die;
 
 

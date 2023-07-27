@@ -58,21 +58,20 @@ class PlansAPIController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
-
-
+            
             $user_exist = DB::table('users')->where('id', '=', $request->user_id)->first();
-
+            
             if (!$user_exist) {
                 return response()->json(['error' => 'This user does not exist']);
             }
-
-
+            
+            // get the exact choosen plan
             $choosen_plan = DB::table('plans')
-                ->where('plan_title', '=', $request->plan_title)
-                ->where('duration_time', '=', $request->duration_time)
-                ->where('storage_capacity', '=', $request->storage_capacity)
-                ->where('plan_type', '=', $request->plan_type)->first();
-
+            ->where('plan_title', '=', $request->plan_title)
+            ->where('duration_time', '=', $request->duration_time)
+            ->where('storage_capacity', '=', $request->storage_capacity)
+            ->where('plan_type', '=', $request->plan_type)->first();
+            
                 // var_dump($choosen_plan);die;
 
             $verify_user_plan = Db::table('souscriptions')
@@ -85,6 +84,7 @@ class PlansAPIController extends Controller
             if ($verify_user_plan) {
                 return response()->json(['error' => 'You already suscribed to this plan, add another plan']);
             }
+            // die('oui');
             $input = $request->only('user_id');
             $input['plan_id'] = $choosen_plan->id;
 
@@ -131,6 +131,7 @@ class PlansAPIController extends Controller
                     'message' => 'Plan successfully created',
                     // 'payment status' => $response->status,
                 ];
+                
             } else {
                 $input['trial_ends_at'] = $trial_ends_at = Carbon::now()->addDays(30);
                 // die($input); die;
