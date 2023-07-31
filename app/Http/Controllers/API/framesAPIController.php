@@ -245,6 +245,8 @@ class FramesAPIController extends Controller
         $frames = DB::table('frames')
             ->whereIn('id', $frame_ids)->get();
 
+
+        $user = User::where('id', $id)->first(['id', 'firstname', 'lastname', 'profil_picture']);
         // var_dump($frames);die;
         foreach ($frames as $frame) {
             $contents = DB::table('frame_contents')->where('frame_contents.frame_id', $frame->id)->get();
@@ -255,7 +257,7 @@ class FramesAPIController extends Controller
             $tags = DB::table('tags')->where('frame_id', $frame->id)->get();
             $reactions = DB::table('reactions')->where('frame_id', $frame->id)->get();
             $plan = DB::table('plans')->where('id', $frame->plan_id)->first();
-            $frame->user_id = $id;
+            $frame->user = $user;
             $frame->plan = $plan;
             $frame->contents = $contents;
             $frame->comments = $comments;
